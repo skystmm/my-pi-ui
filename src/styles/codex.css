@@ -1,0 +1,33 @@
+@import "tailwindcss" layer(base);
+
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #171717;
+  --bg-muted: #212121;
+  --bg-hover: #262626;
+  --border: #2a2a2a;
+  --border-strong: #333333;
+  --fg: #ededed;
+  --fg-muted: #a1a1a1;
+  --fg-faint: #737373;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+  --radius: 6px;
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+html, body { background: var(--bg); color: var(--fg); font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif; }
+.mono { font-family: "Geist Mono", "JetBrains Mono", ui-monospace, monospace; }
+
+.prose-invert { color: var(--fg); }
+.prose-invert p { margin: 0.5em 0; line-height: 1.7; color: #d4d4d4; font-size: 14px; }
+.prose-invert code { background: var(--bg-muted); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+.prose-invert pre { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; overflow: auto; }
+
+/* Codex subtle focus */
+:focus-visible { outline: 1px solid #3a3a3a; outline-offset: 1px; }

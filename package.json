@@ -1,0 +1,42 @@
+{
+  "name": "pi-ui-shell",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "pi-ui": "bin/cli.js"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "files": [
+    "dist",
+    "shell-service/dist",
+    "bin"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "dev:all": "concurrently \"npm run dev --prefix shell-service\" \"npm run dev\"",
+    "sync:protocol": "node scripts/sync-protocol.mjs",
+    "typecheck": "tsc -b",
+    "build": "npm run sync:protocol && tsc -b && vite build",
+    "build:shell": "npm run build --prefix shell-service",
+    "check": "node scripts/sync-protocol.mjs --check && tsc -b && npm run build --prefix shell-service && npm test --prefix shell-service",
+    "clean": "rm -rf dist shell-service/dist node_modules/.tmp",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^8.2.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.0",
+    "vite": "^6.3.0"
+  }
+}

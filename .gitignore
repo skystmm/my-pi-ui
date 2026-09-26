@@ -1,0 +1,13 @@
+.DS_Store
+.claude/
+.playwright-cli/
+.pi/
+docs/
+.env
+.env.*
+node_modules/
+dist/
+shell-service/node_modules/
+shell-service/dist/
+*.tsbuildinfo
+*.log

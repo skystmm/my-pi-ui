@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import { wsClient } from "./lib/ws-client"
-import { builtinCommands, outgoingPrompt, parseBuiltinCommand } from "./lib/builtin-commands"
+import { builtinCommands, availableBuiltinCommands, outgoingPrompt, parseBuiltinCommand } from "./lib/builtin-commands"
+import { buildSessionTreeRows, lastForkableUserEntryId } from "./lib/session-tree"
 import {
   useProjects, useProviders, useModels, useLastError, useSessionEntries, useSessions,
   useExtensions, useSkills, useSessionStats, useSessionStream, useSessionLeaf,
@@ -14,9 +15,12 @@ import { ProjectDirectoryPicker } from "./features/shell/ProjectDirectoryPicker"
 import { Transcript, type Attachment } from "./features/shell/Transcript"
 import { RightRail, type RailTab } from "./features/shell/RightRail"
 import type { ProviderDraft } from "./features/model-config/types"
-import type { ModelEntry, ProjectMeta, ThinkingLevel, ShellEvent, SlashCommandEntry } from "./lib/ws-protocol"
+import type { ModelEntry, ProjectMeta, ThinkingLevel, ShellEvent, ShellCommand, SlashCommandEntry } from "./lib/ws-protocol"
 
 type DirectoryListing = Extract<ShellEvent, { t: "browse_directories_result" }>
+type PromptStatus = { kind: "sending" | "accepted" | "failed" | "unknown"; message: string }
+type Operation = "fork" | "clone" | "compact"
+type OperationStatus = { operation: Operation; kind: "sending" | "success" | "failed" | "unknown"; message: string }
 
 export default function App() {
   // ---- data from the Shell Service (never from local guesses) ---------------
@@ -28,6 +32,7 @@ export default function App() {
   const extensions = useExtensions()
   const skills = useSkills()
   const lastError = useLastError()
+  const connectionEpoch = useSyncExternalStore(wsClient.subscribeConnection, wsClient.getConnectionEpoch)
 
   // ---- ui state ------------------------------------------------------------
   const [projectId, setProjectId] = useState("")
@@ -46,6 +51,10 @@ export default function App() {
   const [composerMode, setComposerMode] = useState<"plan" | "build">("plan")
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [promptStatus, setPromptStatus] = useState<PromptStatus | null>(null)
+  const pendingPrompt = useRef<{ requestId: string; timeout: number } | null>(null)
+  const [operationStatus, setOperationStatus] = useState<OperationStatus | null>(null)
+  const pendingOperation = useRef<{ requestId: string; operation: Operation; timeout: number } | null>(null)
   const [pickingDir, setPickingDir] = useState(false)
   const [directoryBrowserOpen, setDirectoryBrowserOpen] = useState(false)
   const [directoryListing, setDirectoryListing] = useState<DirectoryListing | null>(null)
@@ -72,26 +81,18 @@ export default function App() {
   const activeModelKey = useActiveModel(curProject?.cwd ?? "")
   const firstUsable = models.find(m => m.available)
   const shownModelKey = activeModelKey || (firstUsable ? `${firstUsable.providerId}/${firstUsable.id}` : "")
-  const availableCommands = useMemo(() => [...builtinCommands, ...slashCommands.filter(c => !builtinCommands.some(b => b.name === c.name))], [slashCommands])
+  const treeRows = useMemo(() => buildSessionTreeRows(entries, leafId), [entries, leafId])
+  const forkableEntryId = useMemo(() => lastForkableUserEntryId(entries, leafId), [entries, leafId])
+  const availableCommands = useMemo(() => {
+    const builtins = availableBuiltinCommands({ project: Boolean(curProject), session: Boolean(effectiveSessionId), leaf: Boolean(leafId), forkable: Boolean(forkableEntryId) })
+    return [...builtins, ...slashCommands.filter(command => !builtinCommands.some(b => b.name === command.name))]
+  }, [curProjectId, effectiveSessionId, leafId, forkableEntryId, slashCommands])
   const ctxUsage = stats?.contextUsage ?? null
   const ctxPercent = ctxUsage?.percent != null ? Math.max(0, Math.min(100, ctxUsage.percent)) : null
   const fmtK = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${Math.round(n)}`
   const fmtReserve = (n: number) => n >= 1000 && n % 1024 === 0 ? `${n / 1024}k` : `${n}`
   const reserveLabel = stats ? fmtReserve(stats.reserveTokens) : "—"
   const compactionCount = entries.filter(e => e.type === "compaction" || e.type === "branch_summary").length
-  // Branch actually in context: walk parentId from the leaf back to the root.
-  const branchPath = useMemo(() => {
-    if (!entries.length) return entries
-    const byId = new Map(entries.map(e => [e.id, e]))
-    const out: typeof entries = []
-    let cur: (typeof entries)[number] | undefined = (leafId ? byId.get(leafId) : undefined) ?? entries[entries.length - 1]
-    let guard = 0
-    while (cur && guard++ < 10000) {
-      out.push(cur)
-      cur = cur.parentId ? byId.get(cur.parentId) : undefined
-    }
-    return out.reverse()
-  }, [entries, leafId])
 
   // ---- effects -------------------------------------------------------------
   useEffect(() => {
@@ -106,17 +107,24 @@ export default function App() {
 
   useEffect(() => {
     if (curProjectId) wsClient.send({ t: "list_sessions", projectId: curProjectId })
-  }, [curProjectId])
+  }, [curProjectId, connectionEpoch])
 
   // pi's usable-model list is authoritative and per-cwd
   useEffect(() => {
     if (curProject?.cwd) wsClient.send({ t: "list_available_models", cwd: curProject.cwd })
-  }, [curProject?.cwd])
+  }, [curProject?.cwd, connectionEpoch])
 
   useEffect(() => {
     setSlashCommands([])
-    if (curProject?.cwd) wsClient.send({ t: "list_slash_commands", cwd: curProject.cwd })
   }, [curProject?.cwd])
+
+  useEffect(() => {
+    if (curProject?.cwd) wsClient.send({ t: "list_slash_commands", cwd: curProject.cwd })
+  }, [curProject?.cwd, connectionEpoch])
+
+  useEffect(() => {
+    if (curProject?.cwd) wsClient.send({ t: "memory_list_suggestions", cwd: curProject.cwd })
+  }, [curProject?.cwd, connectionEpoch])
 
   useEffect(() => {
     const off = wsClient.on(ev => {
@@ -129,7 +137,7 @@ export default function App() {
     if (effectiveSessionId && curProjectId) {
       wsClient.send({ t: "get_session", projectId: curProjectId, sessionId: effectiveSessionId })
     }
-  }, [effectiveSessionId, curProjectId])
+  }, [effectiveSessionId, curProjectId, connectionEpoch])
 
   useEffect(() => {
     if (!toast) return
@@ -211,6 +219,46 @@ export default function App() {
     if (lastError) setToast(`${lastError.code}: ${lastError.message}`)
   }, [lastError])
 
+  useEffect(() => {
+    const offResult = wsClient.on(ev => {
+      if (ev.t !== "prompt_result" || ev.requestId !== pendingPrompt.current?.requestId) return
+      clearTimeout(pendingPrompt.current.timeout)
+      pendingPrompt.current = null
+      if (ev.accepted) {
+        setComposerText("")
+        setAttachments([])
+        setPromptStatus({ kind: "accepted", message: "已提交给 Pi，等待回复" })
+      } else {
+        setPromptStatus({ kind: "failed", message: ev.message ?? "发送失败，草稿已保留" })
+      }
+    })
+    const offClose = wsClient.onClose(() => {
+      if (!pendingPrompt.current) return
+      clearTimeout(pendingPrompt.current.timeout)
+      pendingPrompt.current = null
+      setPromptStatus({ kind: "unknown", message: "连接中断，无法确认是否发送成功。请检查会话后再重试。" })
+    })
+    return () => { offResult(); offClose(); if (pendingPrompt.current) clearTimeout(pendingPrompt.current.timeout) }
+  }, [])
+
+  useEffect(() => {
+    const offResult = wsClient.on(ev => {
+      if (ev.t !== "session_operation_result" || ev.requestId !== pendingOperation.current?.requestId) return
+      clearTimeout(pendingOperation.current.timeout)
+      pendingOperation.current = null
+      setOperationStatus({ operation: ev.operation, kind: ev.ok ? "success" : "failed", message: ev.message })
+      setToast(ev.message)
+    })
+    const offClose = wsClient.onClose(() => {
+      const pending = pendingOperation.current
+      if (!pending) return
+      clearTimeout(pending.timeout)
+      pendingOperation.current = null
+      setOperationStatus({ operation: pending.operation, kind: "unknown", message: "连接中断，操作结果未确认。请检查会话列表。" })
+    })
+    return () => { offResult(); offClose(); if (pendingOperation.current) clearTimeout(pendingOperation.current.timeout) }
+  }, [])
+
   // ---- handlers ------------------------------------------------------------
   const requireReady = (): boolean => {
     if (!wsClient.ready) { setToast("Shell Service 未连接（127.0.0.1:5174）· 请确认已启动"); return false }
@@ -270,7 +318,29 @@ export default function App() {
     setToast(`已切换至 ${key}${m.available === false ? "（pi 未就绪：缺凭据）" : ""}`)
   }
 
+  const runOperation = (operation: Operation, fromEntryId?: string, customInstructions?: string): boolean => {
+    if (!curProject?.cwd || !requireReady()) return false
+    if (pendingOperation.current) { setToast("请等待当前会话操作完成"); return false }
+    const requestId = crypto.randomUUID()
+    const cwd = curProject.cwd
+    const cmd: ShellCommand = operation === "fork"
+      ? { t: "fork", requestId, cwd, fromEntryId: fromEntryId ?? "" }
+      : operation === "clone"
+        ? { t: "clone", requestId, cwd }
+        : { t: "compact", requestId, cwd, customInstructions }
+    if (!wsClient.sendNow(cmd)) { setOperationStatus({ operation, kind: "failed", message: "连接不可用，请重试" }); return false }
+    const timeout = window.setTimeout(() => {
+      if (pendingOperation.current?.requestId !== requestId) return
+      pendingOperation.current = null
+      setOperationStatus({ operation, kind: "unknown", message: "操作确认超时。请检查会话列表后再试。" })
+    }, operation === "compact" ? 190000 : 35000)
+    pendingOperation.current = { requestId, operation, timeout }
+    setOperationStatus({ operation, kind: "sending", message: `${operation} 执行中…` })
+    return true
+  }
+
   const sendComposer = () => {
+    if (pendingPrompt.current) return
     const msg = composerText.trim()
     if (!msg && !attachments.length) return
     if (!curProject?.cwd) { handlePickDirectory(); return }
@@ -295,17 +365,18 @@ export default function App() {
         wsClient.send({ t: "create_session", cwd: curProject.cwd })
       } else if (name === "compact") {
         if (!effectiveSessionId) { setToast("请先创建或选择会话"); return }
-        wsClient.send({ t: "compact", cwd: curProject.cwd, customInstructions: args || undefined })
+        if (!runOperation("compact", undefined, args || undefined)) return
       } else if (name === "clone") {
         if (args) { setToast("用法：/clone"); return }
-        if (!effectiveSessionId) { setToast("请先创建或选择会话"); return }
-        wsClient.send({ t: "clone", cwd: curProject.cwd })
+        if (!effectiveSessionId || !leafId) { setToast("当前会话没有可克隆的节点"); return }
+        if (!runOperation("clone")) return
       } else if (name === "fork") {
         if (args) { setToast("用法：/fork"); return }
-        if (!leafId) { setToast("当前会话没有可分支的消息"); return }
-        wsClient.send({ t: "fork", cwd: curProject.cwd, fromEntryId: leafId })
+        if (!forkableEntryId) { setToast("当前分支没有可分叉的用户消息"); return }
+        if (!runOperation("fork", forkableEntryId)) return
       } else if (name === "tree") {
         if (args) { setToast("用法：/tree"); return }
+        if (!effectiveSessionId) { setToast("请先创建或选择会话"); return }
         setRailCollapsed(false)
         setRailTab("tree")
       }
@@ -313,16 +384,28 @@ export default function App() {
       return
     }
     const outgoing = outgoingPrompt(msg, composerMode)
-    wsClient.send({
+    const requestId = crypto.randomUUID()
+    const timeout = window.setTimeout(() => {
+      if (pendingPrompt.current?.requestId !== requestId) return
+      pendingPrompt.current = null
+      setPromptStatus({ kind: "unknown", message: "等待发送确认超时。请检查会话后再重试。" })
+    }, 30000)
+    pendingPrompt.current = { requestId, timeout }
+    setPromptStatus({ kind: "sending", message: "正在提交给 Pi…" })
+    const sent = wsClient.sendNow({
       t: "prompt",
+      requestId,
       cwd: curProject.cwd,
       projectId: curProjectId,
       sessionId: effectiveSessionId || undefined,
       message: outgoing,
       images: attachments.map(a => ({ type: "image", data: a.data, mimeType: a.mimeType })),
     })
-    setComposerText("")
-    setAttachments([])
+    if (!sent) {
+      clearTimeout(timeout)
+      pendingPrompt.current = null
+      setPromptStatus({ kind: "failed", message: "连接不可用，草稿已保留" })
+    }
   }
 
   const handlePickDirectory = () => {
@@ -458,8 +541,9 @@ export default function App() {
           composerMode={composerMode}
           modeMenuOpen={modeMenuOpen}
           attachments={attachments}
+          promptStatus={promptStatus}
           fileRef={fileRef}
-          onComposerText={setComposerText}
+          onComposerText={value => { setComposerText(value); if (promptStatus?.kind !== "sending") setPromptStatus(null) }}
           onComposerFocus={setComposerFocused}
           onComposerMode={setComposerMode}
           onModeMenu={setModeMenuOpen}
@@ -475,7 +559,9 @@ export default function App() {
             onTabChange={setRailTab}
             entries={entries}
             leafId={leafId}
-            branchPath={branchPath}
+            treeRows={treeRows}
+            forkableEntryId={forkableEntryId}
+            operationStatus={operationStatus}
             stats={stats}
             ctxPercent={ctxPercent}
             reserveLabel={reserveLabel}
@@ -484,8 +570,10 @@ export default function App() {
             extensions={extensions}
             skills={skills}
             cwd={curProject?.cwd ?? ""}
-            onFork={() => { if (curProject?.cwd && leafId) wsClient.send({ t: "fork", cwd: curProject.cwd, fromEntryId: leafId }) }}
-            onClone={() => { if (curProject?.cwd) wsClient.send({ t: "clone", cwd: curProject.cwd }) }}
+            sessionId={effectiveSessionId}
+            onFork={id => { runOperation("fork", id) }}
+            onClone={() => { runOperation("clone") }}
+            onCompact={() => { runOperation("compact") }}
             onOpenExtensionDrawer={() => setExtensionDrawerOpen(true)}
           />
         )}

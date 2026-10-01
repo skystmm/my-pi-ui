@@ -2,9 +2,12 @@ import type { ShellEvent, ShellCommand } from "./ws-protocol"
 
 type Listener = (ev: ShellEvent) => void
 
-class WsClient {
+export class WsClient {
   private ws: WebSocket | null = null
   private listeners = new Set<Listener>()
+  private connectionListeners = new Set<() => void>()
+  private closeListeners = new Set<() => void>()
+  private connectionEpoch = 0
   private url: string
   private retry = 0
   private timer: number | null = null
@@ -26,6 +29,8 @@ class WsClient {
       const pending = this.queue
       this.queue = []
       for (const data of pending) this.ws?.send(data)
+      this.connectionEpoch++
+      for (const listener of this.connectionListeners) listener()
     }
     this.ws.onmessage = (e) => {
       try {
@@ -34,6 +39,7 @@ class WsClient {
       } catch {}
     }
     this.ws.onclose = () => {
+      for (const listener of this.closeListeners) listener()
       if (!this.shouldReconnect) return
       const delay = Math.min(1000 * Math.pow(1.6, this.retry), 15000)
       this.retry++
@@ -67,10 +73,28 @@ class WsClient {
     }
   }
 
+  /** Prompts must never enter the reconnect queue: replay could send them twice. */
+  sendNow(cmd: ShellCommand): boolean {
+    if (this.ws?.readyState !== WebSocket.OPEN) return false
+    try { this.ws.send(JSON.stringify(cmd)); return true } catch { return false }
+  }
+
   on(listener: Listener): () => void {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener)
   }
+
+  subscribeConnection = (listener: () => void): (() => void) => {
+    this.connectionListeners.add(listener)
+    return () => this.connectionListeners.delete(listener)
+  }
+
+  onClose(listener: () => void): () => void {
+    this.closeListeners.add(listener)
+    return () => this.closeListeners.delete(listener)
+  }
+
+  getConnectionEpoch = (): number => this.connectionEpoch
 
   get ready(): boolean {
     return this.ws?.readyState === WebSocket.OPEN

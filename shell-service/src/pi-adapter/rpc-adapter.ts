@@ -1,4 +1,6 @@
 import { spawn, execFileSync, type ChildProcess } from "node:child_process"
+import { existsSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import { attachJsonlLineReader, serializeJsonLine } from "./jsonl.js"
 
 const STDERR_KEEP = 8 * 1024
@@ -43,14 +45,18 @@ export class PiAdapter {
     //   PI_UI_PI_BIN   explicit binary (used verbatim, rpc args appended)
     //   PI_UI_PI_ENTRY explicit path to dist/rpc-entry.js (run with node)
     //   otherwise      `pi` from PATH
+    const builtExtension = fileURLToPath(new URL("../memory/pi-extension.js", import.meta.url))
+    const sourceExtension = fileURLToPath(new URL("../memory/pi-extension.ts", import.meta.url))
+    const extension = existsSync(builtExtension) ? builtExtension : sourceExtension
+    const args = ["--mode", "rpc", ...(process.env.PI_UI_MEMORY_EXTENSION === "0" ? [] : ["--extension", extension])]
     const envBin = process.env.PI_UI_PI_BIN?.trim()
-    if (envBin) return { cmd: envBin, args: ["--mode", "rpc"] }
+    if (envBin) return { cmd: envBin, args }
 
     const envEntry = process.env.PI_UI_PI_ENTRY?.trim()
-    if (envEntry) return { cmd: process.execPath, args: [envEntry] }
+    if (envEntry) return { cmd: process.execPath, args: [envEntry, ...args] }
 
     const onPath = whichPi()
-    if (onPath) return { cmd: onPath, args: ["--mode", "rpc"] }
+    if (onPath) return { cmd: onPath, args }
 
     throw new Error("找不到 pi：请把 pi 加入 PATH，或设置 PI_UI_PI_BIN / PI_UI_PI_ENTRY 指向 pi 可执行文件与 dist/rpc-entry.js")
   }
@@ -121,12 +127,12 @@ export class PiAdapter {
 
   get alive(){ return !!this.proc && this.proc.exitCode===null }
 
-  private sendRaw(cmd: Record<string,unknown>): Promise<RpcResponse>{
+  private sendRaw(cmd: Record<string,unknown>, timeoutMs = 25000): Promise<RpcResponse>{
     if(!this.proc?.stdin) return Promise.reject(new Error("pi rpc not started"))
     const id = `piui_${this.seq++}`
     const payload = { id, ...cmd }
     return new Promise<RpcResponse>((resolve,reject)=>{
-      const timer = setTimeout(()=>{ if(this.pending.has(id)){ this.pending.delete(id); reject(new Error("rpc timeout")) } }, 25000)
+      const timer = setTimeout(()=>{ if(this.pending.has(id)){ this.pending.delete(id); reject(new Error("rpc timeout")) } }, timeoutMs)
       this.pending.set(id, {
         resolve: (v)=>{ clearTimeout(timer); resolve(v) },
         reject: (e)=>{ clearTimeout(timer); reject(e) },
@@ -149,7 +155,7 @@ export class PiAdapter {
   async getAvailableModels(){ await this.ensure(); const r = await this.sendRaw({type:"get_available_models"}); if(!r.success) throw new Error(r.error ?? "get_available_models failed"); return r.data as { models?: unknown[] } }
   async getCommands(){ await this.ensure(); const r = await this.sendRaw({type:"get_commands"}); if(!r.success) throw new Error(r.error ?? "get_commands failed"); return r.data as { commands?: unknown[] } }
   async getEntries(since?: string){ await this.ensure(); const r = await this.sendRaw({type:"get_entries", since}); if(!r.success) throw new Error(r.error ?? "get_entries failed"); return r.data }
-  async compact(customInstructions?:string){ await this.ensure(); const r = await this.sendRaw({type:"compact", customInstructions}); if(!r.success) throw new Error(r.error ?? "compact failed"); return r.data }
+  async compact(customInstructions?:string){ await this.ensure(); const r = await this.sendRaw({type:"compact", customInstructions}, 180000); if(!r.success) throw new Error(r.error ?? "compact failed"); return r.data }
   async getTree(){ await this.ensure(); const r = await this.sendRaw({type:"get_tree"}); if(!r.success) throw new Error(r.error ?? "get_tree failed"); return r.data }
   async switchSession(sessionPath:string){ await this.ensure(); const r = await this.sendRaw({type:"switch_session", sessionPath}); if(!r.success) throw new Error(r.error ?? "switch_session failed"); return r.data }
   async newSession(parentSession?:string){ await this.ensure(); const r = await this.sendRaw({type:"new_session", parentSession}); if(!r.success) throw new Error(r.error ?? "new_session failed"); return r.data }

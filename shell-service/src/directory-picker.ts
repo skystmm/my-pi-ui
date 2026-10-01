@@ -5,8 +5,8 @@ const execFileAsync = promisify(execFile)
 type Runner = (file: string, args: string[], options: { timeout: number; maxBuffer: number }) => Promise<{ stdout: string }>
 
 /** Returns an absolute path from the macOS folder dialog, or null on Cancel. */
-export async function chooseProjectDirectory(run: Runner = execFileAsync): Promise<string | null> {
-  if (process.platform !== "darwin") throw new Error("当前系统暂不支持原生目录选择")
+export async function chooseProjectDirectory(run: Runner = execFileAsync, platform: NodeJS.Platform = process.platform): Promise<string | null> {
+  if (platform !== "darwin") throw new Error("当前系统暂不支持原生目录选择，请使用页面内的目录浏览器")
   try {
     const { stdout } = await run("osascript", ["-e", 'POSIX path of (choose folder with prompt "选择项目目录")'], {
       timeout: 120_000,

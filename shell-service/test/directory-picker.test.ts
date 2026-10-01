@@ -57,7 +57,7 @@ test("native folder picker returns a path without requiring typed input", async 
   const picked = await chooseProjectDirectory(async (file, args) => {
     invocation = { file, args }
     return { stdout: "/Users/sky/My Project/\n" }
-  })
+  }, "darwin")
   assert.equal(invocation?.file, "osascript")
   assert.ok(invocation?.args[1]?.includes("choose folder"))
   assert.equal(picked, "/Users/sky/My Project")
@@ -66,13 +66,21 @@ test("native folder picker returns a path without requiring typed input", async 
 test("cancelling the native folder picker leaves project selection unchanged", async () => {
   const picked = await chooseProjectDirectory(async () => {
     throw new Error("execution error: User canceled. (-128)")
-  })
+  }, "darwin")
   assert.equal(picked, null)
 })
 
 test("native folder picker rejects a non-absolute result", async () => {
   await assert.rejects(
-    chooseProjectDirectory(async () => ({ stdout: "relative/path\n" })),
+    chooseProjectDirectory(async () => ({ stdout: "relative/path\n" }), "darwin"),
     /绝对路径/,
   )
+})
+
+test("non-macOS systems use the in-app directory browser", async () => {
+  for (const platform of ["linux", "win32"] as const) {
+    await assert.rejects(chooseProjectDirectory(async () => {
+      throw new Error("native picker must not run")
+    }, platform), /页面内的目录浏览器/)
+  }
 })

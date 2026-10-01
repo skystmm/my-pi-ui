@@ -4,6 +4,7 @@ import { getTrustState } from "./trust.js"
 import { getSessionsDir } from "./paths.js"
 import { isPathInside } from "./path-boundary.js"
 import { readHeader } from "./session-entries.js"
+import { readOpenedProjects } from "./opened-projects.js"
 import type { ProjectMeta } from "./ws-protocol.js"
 
 function sessionsRoot(): string {
@@ -74,6 +75,13 @@ export function scanProjects(): ProjectMeta[] {
   let entries: string[] = []
   let realRoot: string
   try { realRoot = realpathSync(root); entries = readdirSync(root) } catch { return [] }
+  const opened = new Map<string, string>()
+  for (const cwd of readOpenedProjects()) {
+    try {
+      const realCwd = realpathSync(cwd)
+      if (statSync(realCwd).isDirectory()) opened.set(pidForCwd(realCwd), realCwd)
+    } catch { /* deleted projects are not shown */ }
+  }
   const projects: ProjectMeta[] = []
   for (const e of entries) {
     if (!e.startsWith("--")) continue
@@ -84,7 +92,7 @@ export function scanProjects(): ProjectMeta[] {
       st = statSync(full)
       if (!st.isDirectory()) continue
     } catch { continue }
-    const rawCwd = readHeaderCwd(full) ?? pidToCwd.get(e)
+    const rawCwd = readHeaderCwd(full) ?? opened.get(e) ?? pidToCwd.get(e)
     if (!rawCwd) continue // header-less dir we didn't create (e.g. pi pre-flush) — pi listAll skips these too
     const cwd = canonCwd(rawCwd)
     const trust = getTrustState(cwd)

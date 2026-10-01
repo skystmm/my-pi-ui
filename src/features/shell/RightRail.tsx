@@ -2,15 +2,20 @@ import type { SessionEntry, ExtensionEntry, SkillEntry, SessionStats } from "../
 import { entryLabel } from "../../lib/session-entry-schema"
 import { wsClient } from "../../lib/ws-client"
 import { FilesTab } from "./FilesTab"
+import { MemoryTab } from "./MemoryTab"
+import { useMemorySuggestions } from "../../stores/appStore"
+import type { SessionTreeRow } from "../../lib/session-tree"
 
-export type RailTab = "tree" | "context" | "files" | "extensions"
+export type RailTab = "tree" | "context" | "files" | "memory" | "extensions"
 
 type Props = {
   tab: RailTab
   onTabChange: (t: RailTab) => void
   entries: SessionEntry[]
   leafId: string
-  branchPath: SessionEntry[]
+  treeRows: SessionTreeRow[]
+  forkableEntryId: string | null
+  operationStatus: { operation: "fork" | "clone" | "compact"; kind: "sending" | "success" | "failed" | "unknown"; message: string } | null
   stats: SessionStats | null
   ctxPercent: number | null
   reserveLabel: string
@@ -19,8 +24,10 @@ type Props = {
   extensions: ExtensionEntry[]
   skills: SkillEntry[]
   cwd: string
-  onFork: () => void
+  sessionId: string
+  onFork: (entryId: string) => void
   onClone: () => void
+  onCompact: () => void
   onOpenExtensionDrawer: () => void
 }
 
@@ -29,18 +36,19 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 }
 
 export function RightRail(props: Props) {
-  const { tab, onTabChange, entries, leafId, branchPath, stats, ctxPercent, reserveLabel, compactionCount, fmtK, extensions, skills, cwd, onFork, onClone, onOpenExtensionDrawer } = props
+  const { tab, onTabChange, entries, leafId, treeRows, forkableEntryId, operationStatus, stats, ctxPercent, reserveLabel, compactionCount, fmtK, extensions, skills, cwd, sessionId, onFork, onClone, onCompact, onOpenExtensionDrawer } = props
+  const memorySuggestions = useMemorySuggestions(cwd)
 
   return (
     <aside className="w-[360px] shrink-0 border-l flex flex-col overflow-hidden hidden lg:flex" style={{ background: "var(--bg)", borderColor: "var(--border)" }}>
       <div className="flex items-center gap-1 p-2 border-b" style={{ borderColor: "var(--border)" }}>
-        {(["tree", "context", "files", "extensions"] as const).map(t => (
+        {(["tree", "context", "files", "memory", "extensions"] as const).map(t => (
           <button
             key={t}
             onClick={() => onTabChange(t)}
             className={`flex-1 py-1.5 rounded-md mono text-[10px] font-medium capitalize border ${tab === t ? "bg-[var(--bg-card)] border-[var(--border-strong)] text-zinc-200" : "border-transparent text-zinc-500 hover:text-zinc-300"}`}
           >
-            {t === "tree" ? "Session Tree" : t === "context" ? "Context" : t === "files" ? "Files" : "Ext"}
+            {t === "tree" ? "Tree" : t === "context" ? "Context" : t === "files" ? "Files" : t === "memory" ? `Memory${memorySuggestions.length ? ` · ${memorySuggestions.length}` : ""}` : "Ext"}
           </button>
         ))}
       </div>
@@ -49,42 +57,45 @@ export function RightRail(props: Props) {
         {tab === "tree" && (
           <>
             <Card>
-              <div className="mono text-[11px] text-zinc-500 mb-2">SESSION TREE · leaf→root 链 · {entries.length} entries</div>
-              <div className="space-y-1.5 max-h-[320px] overflow-auto">
-                {branchPath.length ? branchPath.map((e, i) => (
-                  <div key={e.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-md border mono text-[11px] ${e.id === leafId ? "border-zinc-600 bg-[var(--bg-muted)] text-white" : "border-transparent hover:bg-[var(--bg-muted)] text-zinc-400"}`}>
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${e.type === "compaction" ? "bg-amber-500" : e.type === "branch_summary" ? "bg-violet-500" : e.type === "message" ? "bg-emerald-500" : "bg-zinc-500"}`} />
-                    <span className="truncate">{entryLabel(e)} · {e.id.slice(0, 8)}</span>
-                    {i === branchPath.length - 1 && <span className="ml-auto shrink-0 text-zinc-500">leaf</span>}
+              <div className="mono text-[11px] text-zinc-500 mb-2">SESSION TREE · 全部分支 · {entries.length} entries</div>
+              <div className="space-y-0.5 max-h-[420px] overflow-auto">
+                {treeRows.length ? treeRows.map(row => (
+                  <div key={row.entry.id} className={`flex items-center gap-1.5 py-1 pr-1 rounded-md mono text-[11px] ${row.entry.id === leafId ? "bg-[var(--bg-muted)] text-white" : row.active ? "text-zinc-300" : "text-zinc-500"}`} style={{ paddingLeft: `${Math.min(row.depth * 13 + 4, 130)}px` }} title={`${entryLabel(row.entry)} · ${row.entry.id}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${row.entry.type === "compaction" ? "bg-amber-500" : row.entry.type === "branch_summary" ? "bg-violet-500" : row.active ? "bg-emerald-500" : "bg-zinc-600"}`} />
+                    <span className="truncate flex-1">{entryLabel(row.entry)} · {row.entry.id.slice(0, 8)}</span>
+                    {row.childCount > 1 && <span className="text-sky-400 shrink-0" title="此处有多个子分支">↳{row.childCount}</span>}
+                    {row.entry.id === leafId && <span className="text-zinc-400 shrink-0">leaf</span>}
+                    {row.entry.type === "message" && row.entry.message.role === "user" && <button onClick={() => onFork(row.entry.id)} disabled={operationStatus?.kind === "sending"} className="text-[10px] text-sky-400 hover:text-sky-200 disabled:opacity-40 shrink-0" title="在这条用户消息之前创建分叉会话">fork</button>}
                   </div>
                 )) : <span className="mono text-[11px] text-zinc-600">暂无节点</span>}
               </div>
               <div className="mono text-[11px] text-zinc-600 mt-3 leading-relaxed">
-                存储层无损（JSONL 全量）· 推理层有损可视化：<br />
-                <span className="text-zinc-400">compaction</span> 标注 <span className="text-zinc-300">firstKeptEntryId</span>，可展开原始历史
+                亮色节点位于当前 leaf 路径；分叉节点显示子分支数量。fork 会在所选用户消息之前创建新会话。
               </div>
             </Card>
 
             <Card>
               <div className="mono text-[11px] text-zinc-500 mb-2">ACTIONS</div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
-                  onClick={onFork}
-                  disabled={!leafId || !cwd}
-                  title="以当前 leaf 为分叉点开新会话（pi rpc fork）"
+                  onClick={() => { if (forkableEntryId) onFork(forkableEntryId) }}
+                  disabled={!forkableEntryId || !cwd || operationStatus?.kind === "sending"}
+                  title="从当前分支最近的用户消息创建分叉会话"
                   className="py-1.5 rounded-md border mono text-[11px] hover:bg-[var(--bg-hover)] disabled:opacity-40"
                   style={{ borderColor: "var(--border)", background: "var(--bg)" }}
-                >fork · leaf</button>
+                >fork</button>
                 <button
                   onClick={onClone}
-                  disabled={!cwd}
+                  disabled={!cwd || !leafId || operationStatus?.kind === "sending"}
                   title="复制当前会话（pi rpc clone）"
                   className="py-1.5 rounded-md border mono text-[11px] hover:bg-[var(--bg-hover)] disabled:opacity-40"
                   style={{ borderColor: "var(--border)", background: "var(--bg)" }}
                 >clone</button>
+                <button onClick={onCompact} disabled={!cwd || !leafId || operationStatus?.kind === "sending"} className="py-1.5 rounded-md border mono text-[11px] hover:bg-[var(--bg-hover)] disabled:opacity-40" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>compact</button>
               </div>
+              {operationStatus && <div role="status" className={`mono text-[11px] mt-2 ${operationStatus.kind === "failed" || operationStatus.kind === "unknown" ? "text-amber-400" : "text-zinc-400"}`}>{operationStatus.message}</div>}
               <div className="mono text-[10px] text-zinc-600 mt-2 leading-relaxed">
-                pi rpc 未提供「切换 leaf」命令（get_tree 只读），因此这里不提供 /tree 跳转
+                Pi RPC 的 get_tree 只读；当前面板可查看分支并从用户节点 fork。
               </div>
             </Card>
           </>
@@ -151,6 +162,8 @@ export function RightRail(props: Props) {
             </Card>
           </>
         )}
+
+        {tab === "memory" && <MemoryTab cwd={cwd} sessionId={sessionId} />}
 
         {tab === "extensions" && (
           <div className="space-y-3">

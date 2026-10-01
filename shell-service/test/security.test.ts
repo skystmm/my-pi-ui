@@ -8,7 +8,7 @@ import WebSocket from "ws"
 import { createGuardedWebSocketServer, isWebSocketRequestAllowed } from "../src/ws-access.js"
 import { listDir } from "../src/commands/files.js"
 import { listSessionsForProject, resolveSessionFile, watchSessions } from "../src/session-bridge/jsonl-watcher.js"
-import { scanProjects } from "../src/project-scanner.js"
+import { scanProjects, registerPidCwd, pidForCwd } from "../src/project-scanner.js"
 import type { Ctx } from "../src/commands/context.js"
 
 const temp = mkdtempSync(join(tmpdir(), "pi-ui-security-"))
@@ -24,6 +24,9 @@ before(() => {
   mkdirSync(join(sessions, "--project--"))
   mkdirSync(join(sessions, "--file-link--"))
   mkdirSync(join(sessions, "----"))
+  const projectPid = pidForCwd(project)
+  mkdirSync(join(sessions, projectPid))
+  registerPidCwd(projectPid, project)
   symlinkSync(outside, join(project, "escape"))
   symlinkSync(outside, join(sessions, "--linked--"))
   writeFileSync(join(outside, "secret.jsonl"), '{"type":"session","id":"secret","cwd":"/tmp"}\n')
@@ -54,6 +57,8 @@ test("WebSocket handshake accepts the local UI and rejects a foreign origin", as
   })
   try {
     assert.equal(await connect("http://localhost:5173"), 101)
+    assert.equal(await connect("http://localhost:9999"), 403)
+    assert.equal(await connect("https://localhost:5173"), 403)
     assert.equal(await connect("https://untrusted.example"), 403)
     assert.equal(await connect(), 101) // local non-browser client
   } finally {
@@ -66,6 +71,20 @@ test("WebSocket policy rejects non-local peers and opaque origins", () => {
   assert.equal(isWebSocketRequestAllowed("http://localhost:5173", "192.168.1.20"), false)
   assert.equal(isWebSocketRequestAllowed("null", "127.0.0.1"), false)
   assert.equal(isWebSocketRequestAllowed("http://127.0.0.1:5173", "::ffff:127.0.0.1"), true)
+  assert.equal(isWebSocketRequestAllowed("http://127.0.0.1:9999", "127.0.0.1"), false)
+})
+
+test("additional browser origins require explicit local configuration", () => {
+  const previous = process.env.PI_UI_ORIGINS
+  try {
+    process.env.PI_UI_ORIGINS = "http://127.0.0.1:4173,https://untrusted.example,http://localhost:9999/path"
+    assert.equal(isWebSocketRequestAllowed("http://127.0.0.1:4173", "127.0.0.1"), true)
+    assert.equal(isWebSocketRequestAllowed("https://untrusted.example", "127.0.0.1"), false)
+    assert.equal(isWebSocketRequestAllowed("http://localhost:9999", "127.0.0.1"), false)
+  } finally {
+    if (previous === undefined) delete process.env.PI_UI_ORIGINS
+    else process.env.PI_UI_ORIGINS = previous
+  }
 })
 
 test("session lookup rejects traversal and linked project directories", async () => {

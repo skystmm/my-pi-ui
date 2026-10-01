@@ -12,6 +12,16 @@ export const builtinCommands: SlashCommandEntry[] = [
   { name: "tree", source: "builtin", description: "打开时间线树面板" },
 ]
 
+export function availableBuiltinCommands(context: { project: boolean; session: boolean; leaf: boolean; forkable: boolean }): SlashCommandEntry[] {
+  if (!context.project) return []
+  return builtinCommands.filter(command => {
+    if (command.name === "compact" || command.name === "tree") return context.session
+    if (command.name === "clone") return context.session && context.leaf
+    if (command.name === "fork") return context.forkable
+    return true
+  })
+}
+
 export function parseBuiltinCommand(text: string): { name: string; args: string } | null {
   const match = /^\/([^\s]+)(?:\s+([\s\S]*))?$/.exec(text.trim())
   if (!match || !builtinCommands.some(c => c.name === match[1])) return null

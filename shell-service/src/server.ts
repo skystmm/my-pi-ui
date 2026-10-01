@@ -6,7 +6,8 @@ import { watchProjects, canonCwd } from "./project-scanner.js"
 import { watchSessions } from "./session-bridge/jsonl-watcher.js"
 import { attachExtensionBridge } from "./extension-bridge.js"
 import { providersSnapshot, modelsSnapshot, extensionsSnapshot, pathSkillsSnapshot } from "./snapshots.js"
-import { broadcast, send, getOpenSession } from "./ws-util.js"
+import { broadcast, send, sendToSession, getOpenSession } from "./ws-util.js"
+import { listSuggestions, settlePreferenceTurn } from "./memory/suggestions.js"
 import { getActiveSession } from "./active-session.js"
 import { learnActiveSession, pushSessionTail } from "./session-router.js"
 import { scheduleStatsPush } from "./stats-push.js"
@@ -15,6 +16,7 @@ import * as agentCmds from "./commands/agent.js"
 import * as providerCmds from "./commands/provider.js"
 import * as extensionCmds from "./commands/extension.js"
 import * as fileCmds from "./commands/files.js"
+import * as memoryCmds from "./commands/memory.js"
 import { browseDirectories, createDirectory } from "./commands/browse-directories.js"
 import { createGuardedWebSocketServer } from "./ws-access.js"
 import type { Ctx } from "./commands/context.js"
@@ -48,6 +50,14 @@ async function handleCommand(ctx: Ctx, cmd: ShellCommand): Promise<void> {
     case "create_session": return sessionCmds.createSession(ctx, cmd)
     // ---- agent --------------------------------------------------------------
     case "prompt": return agentCmds.prompt(ctx, cmd)
+    case "memory_list": return memoryCmds.listMemories(ctx, cmd)
+    case "memory_list_suggestions": return memoryCmds.listMemorySuggestions(ctx, cmd)
+    case "memory_resolve_suggestion": return memoryCmds.resolveMemorySuggestion(ctx, cmd)
+    case "get_memory_settings": return memoryCmds.getSettings(ctx)
+    case "set_memory_settings": return memoryCmds.setSettings(ctx, cmd)
+    case "memory_create":
+    case "memory_update":
+    case "memory_delete": return memoryCmds.mutateMemory(ctx, cmd)
     case "steer": return agentCmds.steer(ctx, cmd)
     case "abort": return agentCmds.abort(ctx, cmd)
     case "set_model": return agentCmds.setModel(ctx, cmd)
@@ -76,6 +86,8 @@ async function handleCommand(ctx: Ctx, cmd: ShellCommand): Promise<void> {
     case "extension_command": return extensionCmds.extensionCommand(ctx, cmd)
     // ---- files --------------------------------------------------------------
     case "list_dir": return fileCmds.listDir(ctx, cmd)
+    case "read_file": return fileCmds.readFilePreview(ctx, cmd)
+    case "search_files": return fileCmds.searchFiles(ctx, cmd)
     default: return
   }
 }
@@ -174,6 +186,9 @@ liveSessions.on((ev) => {
   if (ev.t === "agent_event") {
     const payload = ev.payload as Record<string, unknown>
     const kind = typeof payload?.["type"] === "string" ? payload["type"] : ""
+    // The extension bridge routes UI requests, including memory details, to the
+    // appropriate client. Do not rebroadcast their raw payload as agent events.
+    if (kind === "extension_ui_request") return
     if (kind === "message_update") {
       const delta = normalizeStreamDelta(payload)
       if (!delta) return
@@ -193,6 +208,9 @@ liveSessions.on((ev) => {
       const open = clientWatching(ev.cwd)
       if (open) void pushSessionTail(wss, open.projectId, open.sessionId)
       scheduleStatsPush(wss, ev.cwd)
+      if (kind === "agent_settled") void settlePreferenceTurn(ev.cwd).then(suggestion => {
+        if (suggestion && sessionId) sendToSession(wss, sessionId, { t: "memory_suggestions", cwd: ev.cwd, suggestions: listSuggestions(ev.cwd) })
+      }).catch(error => console.error("[memory] suggestion failed:", (error as Error).message))
       return
     }
     broadcast(wss, { t: "agent_event", cwd: ev.cwd, event: payload })

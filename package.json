@@ -16,11 +16,13 @@
   ],
   "scripts": {
     "dev": "vite",
-    "dev:all": "concurrently \"npm run dev --prefix shell-service\" \"npm run dev\"",
+    "dev:all": "npm run build:shell && concurrently \"npm run dev --prefix shell-service\" \"npm run dev\"",
     "sync:protocol": "node scripts/sync-protocol.mjs",
     "typecheck": "tsc -b",
     "build": "npm run sync:protocol && tsc -b && vite build",
     "build:shell": "npm run build --prefix shell-service",
+    "test:e2e": "playwright test",
+    "check:pi": "node scripts/check-pi-compat.mjs",
     "check": "node scripts/sync-protocol.mjs --check && tsc -b && npm run build --prefix shell-service && npm test --prefix shell-service",
     "clean": "rm -rf dist shell-service/dist node_modules/.tmp",
     "preview": "vite preview --port 4173"
@@ -30,7 +32,9 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^22.20.4",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",

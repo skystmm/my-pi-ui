@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { liveSessions } from "../pi-adapter/index.js"
 import { scanProjects, pidForCwd, registerPidCwd, cwdForPid } from "../project-scanner.js"
 import { getSessionsDir } from "../paths.js"
+import { rememberOpenedProject } from "../opened-projects.js"
 import { markProjects, markSessions, setProjectArchived, setSessionArchived } from "../archive.js"
 import { chooseProjectDirectory } from "../directory-picker.js"
 import { listSessionsForProject, getSessionSnapshot } from "../session-bridge/jsonl-watcher.js"
@@ -22,6 +23,10 @@ import type { ShellCommand, SessionMeta } from "../ws-protocol.js"
  * so the sidebar can show it as pending instead of "暂无会话".
  */
 const pendingLive = new Map<string, { sid: string; model: string; thinking: string; mtime: number }>()
+
+export function recordPendingSession(pid: string, sid: string, model = "", thinking = ""): void {
+  pendingLive.set(pid, { sid, model, thinking, mtime: Date.now() })
+}
 
 export async function sessionsWithPending(pid: string): Promise<SessionMeta[]> {
   const real = await listSessionsForProject(pid)
@@ -84,8 +89,14 @@ export async function openProject(ctx: Ctx, cmd: Extract<ShellCommand, { t: "ope
   const cwd = await ctx.cwdOrError(cmd.cwd, "请填写项目绝对路径")
   if (!cwd) return
   const pid = pidForCwd(cwd)
+  try {
+    mkdirSync(join(getSessionsDir(), pid), { recursive: true })
+    await rememberOpenedProject(cwd)
+  } catch (error) {
+    ctx.fail("open_project_failed", (error as Error).message)
+    return
+  }
   registerPidCwd(pid, cwd)
-  try { mkdirSync(join(getSessionsDir(), pid), { recursive: true }) } catch {}
   if (projectsSnapshot().some(p => p.id === pid && p.archived)) await setProjectArchived(pid, false)
   ctx.broadcast({ t: "projects_snapshot", projects: projectsSnapshot() })
   ctx.send({ t: "project_opened", projectId: pid, cwd })
@@ -144,7 +155,7 @@ export async function createSession(ctx: Ctx, cmd: Extract<ShellCommand, { t: "c
     const thinking = typeof st.thinkingLevel === "string" ? st.thinkingLevel : ""
     registerPidCwd(pid, cwd)
     if (sid) {
-      pendingLive.set(pid, { sid, model, thinking, mtime: Date.now() })
+      recordPendingSession(pid, sid, model, thinking)
       setActiveSession(cwd, sid)
     }
     ctx.broadcast({ t: "projects_snapshot", projects: projectsSnapshot() })

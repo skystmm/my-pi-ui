@@ -28,6 +28,8 @@ type ProjectStoreState = {
   pendingExtensionUI: { cwd: string; requestId: string; kind: string; data: unknown; extensionId?: string } | null
   extensionWidgets: Record<string, { lines?: string[]; placement?: string }>
   extensionStatuses: Record<string, string>
+  memoryUsedBySession: Record<string, Extract<ShellEvent, { t: "memory_used" }>["memories"]>
+  memorySuggestionsByCwd: Record<string, Extract<ShellEvent, { t: "memory_suggestions" }>["suggestions"]>
 }
 
 const state: ProjectStoreState = {
@@ -50,12 +52,16 @@ const state: ProjectStoreState = {
   pendingExtensionUI: null,
   extensionWidgets: {},
   extensionStatuses: {},
+  memoryUsedBySession: {},
+  memorySuggestionsByCwd: {},
 }
 
 const EMPTY_SESSIONS: SessionMeta[] = []
 const EMPTY_ENTRIES: Entry[] = []
 const EMPTY_STREAM: StreamBuffer = { text: "", thinking: "", tool: "" }
 const EMPTY_AVAILABLE: { provider: string; id: string; name?: string; contextWindow?: number; reasoning?: boolean }[] = []
+const EMPTY_MEMORY_USED: Extract<ShellEvent, { t: "memory_used" }>["memories"] = []
+const EMPTY_MEMORY_SUGGESTIONS: Extract<ShellEvent, { t: "memory_suggestions" }>["suggestions"] = []
 const listeners = new Set<() => void>()
 function emit() { for (const l of listeners) l() }
 function subscribe(cb: () => void) { listeners.add(cb); return () => listeners.delete(cb) }
@@ -99,6 +105,8 @@ function handleEvent(ev: ShellEvent) {
       break
     case "dir_listing": state.dirListing = ev; break
     case "session_stats": state.statsBySession[ev.sessionId] = ev.stats; break
+    case "memory_used": state.memoryUsedBySession = { ...state.memoryUsedBySession, [ev.sessionId]: ev.memories }; break
+    case "memory_suggestions": state.memorySuggestionsByCwd = { ...state.memorySuggestionsByCwd, [ev.cwd]: ev.suggestions }; break
     case "session_entry": {
       // pi appended a session entry (message / compaction / model change …).
       // Dedupe by id: a snapshot may already contain it.
@@ -110,7 +118,10 @@ function handleEvent(ev: ShellEvent) {
       clearStream(ev.sessionId)
       break
     }
-    case "session_stream": applyStreamDelta(ev.sessionId, ev.delta); break
+    case "session_stream":
+      applyStreamDelta(ev.sessionId, ev.delta)
+      if (ev.delta.kind === "error") state.lastError = { code: "generation_failed", message: ev.delta.message }
+      break
     case "providers_snapshot": state.providers = ev.providers; break
     case "models_snapshot": state.models = ev.models; break
     case "extensions_snapshot": state.extensions = ev.extensions; break
@@ -186,6 +197,14 @@ export function useSessionEntries(sessionId: string) {
 }
 export function useSessionStats(sessionId: string) {
   const getSnapshot = useCallback(() => state.statsBySession[sessionId] ?? null, [sessionId])
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+}
+export function useMemoryUsed(sessionId: string) {
+  const getSnapshot = useCallback(() => state.memoryUsedBySession[sessionId] ?? EMPTY_MEMORY_USED, [sessionId])
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+}
+export function useMemorySuggestions(cwd: string) {
+  const getSnapshot = useCallback(() => state.memorySuggestionsByCwd[cwd] ?? EMPTY_MEMORY_SUGGESTIONS, [cwd])
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 export function useSessionStream(sessionId: string) {

@@ -20,6 +20,7 @@ type Props = {
   composerMode: "plan" | "build"
   modeMenuOpen: boolean
   attachments: Attachment[]
+  promptStatus: { kind: "sending" | "accepted" | "failed" | "unknown"; message: string } | null
   fileRef: RefObject<HTMLInputElement | null>
   onComposerText: (v: string) => void
   onComposerFocus: (v: boolean) => void
@@ -34,7 +35,7 @@ type Props = {
 export function Transcript(props: Props) {
   const {
     entries, stream, leafId, curSession, activeModelKey, cwd, projectDisplayName, projectCount,
-    composerText, slashCommands, composerFocused, composerMode, modeMenuOpen, attachments, fileRef,
+    composerText, slashCommands, composerFocused, composerMode, modeMenuOpen, attachments, promptStatus, fileRef,
     onComposerText, onComposerFocus, onComposerMode, onModeMenu, onAttachFiles, onRemoveAttachment, onSend, onAbort,
   } = props
   const innerRef = useRef<HTMLDivElement>(null)
@@ -93,6 +94,7 @@ export function Transcript(props: Props) {
           )}
 
           <div className={`sticky bottom-4 mt-6 rounded-2xl border shadow-lg ${composerFocused ? "ring-1" : ""}`} style={{ background: "var(--bg-card)", borderColor: composerFocused ? "var(--border-strong)" : "var(--border)", boxShadow: "0 8px 32px rgba(0,0,0,0.45)" }}>
+            {promptStatus && <div role="status" className={`px-4 pt-2 mono text-[11px] ${promptStatus.kind === "failed" || promptStatus.kind === "unknown" ? "text-amber-400" : "text-zinc-400"}`}>{promptStatus.message}</div>}
             {showCommands && (
               <div role="listbox" aria-label="Pi 命令" className="absolute bottom-[calc(100%+8px)] left-0 right-0 max-h-72 overflow-auto rounded-xl border p-1 shadow-xl z-40" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
                 {commandMatches.map((command, index) => (
@@ -107,6 +109,7 @@ export function Transcript(props: Props) {
             <textarea
               ref={composerRef}
               value={composerText}
+              disabled={promptStatus?.kind === "sending"}
               onChange={e => { onComposerText(e.target.value); setCommandIndex(0); setCommandsDismissed(false) }}
               onFocus={() => onComposerFocus(true)}
               onBlur={() => onComposerFocus(false)}
@@ -124,7 +127,7 @@ export function Transcript(props: Props) {
             />
             <div className="flex items-center gap-2 px-3 pb-3">
               <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => { onAttachFiles(e.target.files); e.target.value = "" }} />
-              <button onClick={() => fileRef.current?.click()} title="添加图片附件" className="w-7 h-7 grid place-items-center rounded-full border text-zinc-400 hover:text-zinc-200" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>⊕</button>
+              <button onClick={() => fileRef.current?.click()} disabled={promptStatus?.kind === "sending"} title="添加图片附件" className="w-7 h-7 grid place-items-center rounded-full border text-zinc-400 hover:text-zinc-200 disabled:opacity-40" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>⊕</button>
               {attachments.length > 0 && (
                 <span className="flex items-center gap-1.5 max-w-[40%] overflow-x-auto">
                   {attachments.map((a, i) => (
@@ -156,7 +159,7 @@ export function Transcript(props: Props) {
               </span>
               <span className="ml-auto flex items-center gap-2">
                 <span className="hidden sm:inline mono text-[11px] text-zinc-600">↵ 发送 · ⇧↵ 换行 · Esc 中止</span>
-                <button onClick={onSend} className="w-8 h-8 grid place-items-center rounded-full hover:opacity-90" style={{ background: "#ededed", color: "#0a0a0a" }}>▶</button>
+                <button onClick={onSend} disabled={promptStatus?.kind === "sending"} title={promptStatus?.kind === "failed" || promptStatus?.kind === "unknown" ? "重试发送" : "发送"} className="min-w-8 h-8 px-2 grid place-items-center rounded-full hover:opacity-90 disabled:opacity-40 mono text-[11px]" style={{ background: "#ededed", color: "#0a0a0a" }}>{promptStatus?.kind === "sending" ? "…" : promptStatus?.kind === "failed" || promptStatus?.kind === "unknown" ? "重试" : "▶"}</button>
               </span>
             </div>
           </div>

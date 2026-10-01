@@ -48,7 +48,7 @@ export function ProjectDirectoryPicker({ listing, loading, opening, creating, na
         {listing?.truncated && <div className="px-3 py-2 text-xs text-amber-400">目录较多，仅显示前 500 个</div>}
       </div>
       <div className="px-4 py-3 border-t flex items-center gap-2" style={{ borderColor: "var(--border)" }}>
-        <button onClick={onNativePick} disabled={nativePicking || opening || creating} className="text-xs text-zinc-400 hover:text-white disabled:opacity-50">{nativePicking ? "系统窗口打开中…" : "使用系统窗口"}</button>
+        <button onClick={onNativePick} disabled={nativePicking || opening || creating} className="text-xs text-zinc-400 hover:text-white disabled:opacity-50">{nativePicking ? "系统窗口打开中…" : "使用系统窗口（macOS）"}</button>
         <div className="flex-1" />
         <button onClick={onClose} disabled={opening || creating} className="px-3 py-1.5 text-sm text-zinc-400 disabled:opacity-50">取消</button>
         <button onClick={() => listing && onChoose(listing.cwd)} disabled={!listing || loading || opening || creating} className="px-4 py-1.5 rounded text-sm font-medium disabled:opacity-50" style={{ background: "#ededed", color: "#0a0a0a" }}>{opening ? "打开中…" : "选择此目录"}</button>

@@ -150,6 +150,25 @@ export type StreamDelta =
   | { kind: "done" }
   | { kind: "error"; message: string }
 
+export type MemoryScopeKind = "app" | "project" | "session"
+export type MemoryRecord = {
+  id: string
+  scope: { kind: "app" } | { kind: "project"; projectPath: string } | { kind: "session"; projectPath: string; sessionId: string }
+  content: string
+  source: string
+  revision: number
+  createdAt: number
+  updatedAt: number
+}
+export type MemorySuggestionRecord = {
+  id: string
+  content: string
+  scope: MemoryRecord["scope"]
+  state: "pending" | "accepted" | "rejected"
+  evidence: { projectPath: string; sessionId: string }[]
+  createdAt: number
+}
+
 export type ShellEvent =
   | { t: "projects_snapshot"; projects: ProjectMeta[] }
   | { t: "project_directory_picker"; status: "selected"; cwd: string }
@@ -175,6 +194,12 @@ export type ShellEvent =
   // and streaming assistant deltas between entries.
   | { t: "session_entry"; cwd: string; sessionId: string; entry: SessionEntry }
   | { t: "session_stream"; cwd: string; sessionId: string; delta: StreamDelta }
+  | { t: "prompt_result"; requestId: string; accepted: boolean; message?: string }
+  | { t: "memory_snapshot"; cwd: string; sessionId: string; memories: MemoryRecord[] }
+  | { t: "memory_result"; requestId: string; ok: boolean; message: string; memory?: MemoryRecord }
+  | { t: "memory_used"; cwd: string; sessionId: string; memories: Pick<MemoryRecord, "id" | "scope" | "content" | "revision">[] }
+  | { t: "memory_settings"; recallEnabled: boolean; suggestEnabled: boolean }
+  | { t: "memory_suggestions"; cwd: string; suggestions: MemorySuggestionRecord[] }
   | { t: "rpc_error"; cwd: string; message: string }
   | { t: "session_created"; projectId: string; sessionId: string; cwd: string }
   // pi's adapter was switched to the session the client is viewing
@@ -182,7 +207,10 @@ export type ShellEvent =
   | { t: "model_changed"; cwd: string; provider: string; modelId: string; thinkingLevel: string }
   // pi's get_tree output (SessionTreeNode[]), read-only: rpc has no leaf switch
   | { t: "session_tree"; cwd: string; tree: unknown }
+  | { t: "session_operation_result"; requestId: string; operation: "fork" | "clone" | "compact"; ok: boolean; message: string; sessionId?: string }
   | { t: "dir_listing"; cwd: string; path: string; entries: { name: string; type: "dir" | "file"; size: number; mtime: number }[]; truncated: boolean }
+  | { t: "file_preview"; cwd: string; path: string; content: string; truncated: boolean }
+  | { t: "file_search_result"; cwd: string; query: string; results: { path: string; type: "dir" | "file" }[]; truncated: boolean }
   | { t: "session_stats"; cwd: string; sessionId: string; stats: SessionStats }
   | { t: "error"; code: string; message: string }
 
@@ -198,13 +226,21 @@ export type ShellCommand =
   | { t: "trust_project"; cwd: string; trusted: boolean }
   | { t: "open_project"; cwd: string }
   | { t: "create_session"; cwd: string }
-  | { t: "fork"; cwd: string; fromEntryId: string }
+  | { t: "fork"; requestId: string; cwd: string; fromEntryId: string }
   | { t: "navigate_tree"; cwd: string; targetEntryId: string; summarize?: boolean }
-  | { t: "clone"; cwd: string }
+  | { t: "clone"; requestId: string; cwd: string }
   | { t: "set_model"; cwd: string; modelId: string }
   | { t: "set_thinking"; cwd: string; level: ThinkingLevel }
-  | { t: "compact"; cwd: string; customInstructions?: string }
-  | { t: "prompt"; cwd: string; projectId?: string; sessionId?: string; message: string; images?: unknown[] }
+  | { t: "compact"; requestId: string; cwd: string; customInstructions?: string }
+  | { t: "prompt"; requestId: string; cwd: string; projectId?: string; sessionId?: string; message: string; images?: unknown[] }
+  | { t: "memory_list"; cwd: string; sessionId?: string }
+  | { t: "memory_create"; requestId: string; scope: MemoryScopeKind; cwd?: string; sessionId?: string; content: string }
+  | { t: "memory_update"; requestId: string; scope: MemoryScopeKind; cwd?: string; sessionId?: string; id: string; expectedRevision: number; content: string }
+  | { t: "memory_delete"; requestId: string; scope: MemoryScopeKind; cwd?: string; sessionId?: string; id: string; expectedRevision: number }
+  | { t: "get_memory_settings" }
+  | { t: "set_memory_settings"; recallEnabled?: boolean; suggestEnabled?: boolean }
+  | { t: "memory_list_suggestions"; cwd: string }
+  | { t: "memory_resolve_suggestion"; requestId: string; cwd: string; id: string; action: "accept" | "reject"; content?: string; scope?: MemoryScopeKind; sessionId?: string }
   | { t: "steer"; cwd: string; message: string; images?: unknown[] }
   | { t: "abort"; cwd: string }
   | { t: "upsert_provider"; provider: ProviderDraftInput }
@@ -221,7 +257,9 @@ export type ShellCommand =
   | { t: "remove_extension"; source: string; scope: "global" | "project"; cwd?: string }
   | { t: "set_extension_enabled"; source: string; enabled: boolean; scope: "global" | "project"; cwd?: string }
   | { t: "invoke_skill"; skillId: string; cwd: string; args?: unknown }
-  // real filesystem listing, restricted to a project the client has open
+  // real filesystem access, restricted to a known project
   | { t: "list_dir"; cwd: string; path?: string }
+  | { t: "read_file"; cwd: string; path: string }
+  | { t: "search_files"; cwd: string; query: string }
   | { t: "extension_ui_response"; requestId: string; result?: unknown; cancelled?: boolean; cwd?: string }
   | { t: "extension_command"; extensionId: string; command: string; args?: unknown; cwd: string }

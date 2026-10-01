@@ -11,3 +11,6 @@ shell-service/node_modules/
 shell-service/dist/
 *.tsbuildinfo
 *.log
+.e2e-runtime/
+test-results/
+playwright-report/

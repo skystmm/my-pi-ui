@@ -54,7 +54,7 @@ npx playwright install chromium # 首次运行浏览器测试时安装
 npm run test:e2e    # 独立端口和 Pi 数据目录运行关键浏览器流程
 ```
 
-GitHub Actions 在 Ubuntu 和 macOS 上运行类型检查、服务测试、构建及 Pi 兼容检查，并在 Ubuntu 上运行 Chromium E2E。浏览器测试使用 `5273/5274`，不会连接开发服务的 `5173/5174`。macOS 提供原生目录窗口；Linux 使用页面内目录浏览器，Windows 的原生窗口不受支持，页面内目录浏览器仍可使用。
+浏览器测试使用 `5273/5274`，不会连接开发服务的 `5173/5174`。macOS 提供原生目录窗口；Linux 使用页面内目录浏览器，Windows 的原生窗口不受支持，页面内目录浏览器仍可使用。
 
 协议类型以 `shell-service/src/ws-protocol.ts` 为源，运行 `npm run sync:protocol` 更新前端镜像。
 
@@ -76,7 +76,7 @@ Shell Service 默认监听本机回环地址，并在 WebSocket 握手时检查�
 
 - Pi 终端里的全部内置命令尚未移植到网页。命令候选只列出当前会话可执行的网页内置操作，以及 Pi RPC `get_commands` 返回的命令。分支树仅供查看，Pi RPC 没有切换 leaf 的命令。
 - 文件区提供有限大小的文本只读预览，尚无编辑器或二进制文件预览。
-- 原生系统目录选择窗口依赖 macOS；浏览器内目录选择可跨平台使用。CI 目前覆盖 Ubuntu 和 macOS，Windows 尚未运行完整构建与浏览器验证。
+- 原生系统目录选择窗口依赖 macOS；浏览器内目录选择可跨平台使用。Windows 尚未运行完整构建与浏览器验证。
 
 ## 项目结构
 

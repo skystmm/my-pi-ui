@@ -1,3 +1,5 @@
+import { decisionCommand } from "./system-one/commands.js"
+import { decisionStore } from "./system-one/store.js"
 import { createServer } from "node:http"
 import { statSync } from "node:fs"
 import { WebSocket, type WebSocketServer } from "ws"
@@ -24,7 +26,11 @@ const PORT = Number(process.env.PI_UI_PORT ?? process.env.PORT ?? 5174)
 const HOST = process.env.PI_UI_HOST ?? "127.0.0.1"
 
 function catalogEvents(): ShellEvent[] {
+  const decisions: ShellEvent[] = []
+  // Corrupt decision settings must not prevent unrelated chat catalogs loading.
+  try { decisions.push({ t: "decision_catalog", config: decisionStore.snapshot() }) } catch { /* decision list reports invalid_config */ }
   return [
+    ...decisions,
     { t: "providers_snapshot", providers: providersSnapshot() },
     { t: "models_snapshot", models: modelsSnapshot() },
     { t: "extensions_snapshot", extensions: extensionsSnapshot() },
@@ -34,6 +40,7 @@ function catalogEvents(): ShellEvent[] {
 
 async function handleCommand(ctx: Ctx, cmd: ShellCommand): Promise<void> {
   switch (cmd.t) {
+    case "decision_command": return decisionCommand(ctx, cmd)
     // ---- projects & sessions ------------------------------------------------
     case "list_projects": return sessionCmds.listProjects(ctx)
     case "pick_project_directory": return sessionCmds.pickProjectDirectory(ctx)

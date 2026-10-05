@@ -1,5 +1,6 @@
 // GENERATED — do not edit. Source: shell-service/ws-protocol.ts
 // Regenerate with: npm run sync:protocol
+import type { Config as DecisionConfig, Draft as DecisionDraft } from "./system-one/types"
 // Shared ShellEvent / ShellCommand — mirrors docs/architecture §5
 import type { SessionEntry } from "./session-entry-schema"
 
@@ -153,6 +154,9 @@ export type StreamDelta =
   | { kind: "error"; message: string }
 
 export type ShellEvent =
+  | { t: "decision_selection"; cwd: string; selection: { scope: string; modelId?: string | null } }
+  | { t: "decision_catalog"; config: DecisionConfig }
+  | { t: "decision_result"; requestId: string; ok: boolean; code?: string; result?: unknown; config?: DecisionConfig; selection?: { scope: string; modelId?: string | null } }
   | { t: "projects_snapshot"; projects: ProjectMeta[] }
   | { t: "project_directory_picker"; status: "selected"; cwd: string }
   | { t: "project_directory_picker"; status: "cancelled" | "error"; message?: string }
@@ -189,6 +193,7 @@ export type ShellEvent =
   | { t: "error"; code: string; message: string }
 
 export type ShellCommand =
+  | { t: "decision_command"; action: "list" | "save" | "select" | "test"; requestId: string; cwd?: string; config?: DecisionDraft; modelId?: string | null }
   | { t: "list_projects" }
   | { t: "pick_project_directory" }
   | { t: "browse_directories"; path?: string }

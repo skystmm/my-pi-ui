@@ -1,0 +1,824 @@
+{
+  "coldRun": {
+    "at": "2026-10-05T03:43:48.976Z",
+    "health": {
+      "status": "ok",
+      "loaded": [
+        "english"
+      ],
+      "revisions": {
+        "english": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+      },
+      "device": "mps",
+      "device_is_preference": false,
+      "checkpoint_devices": {
+        "english": "mps"
+      },
+      "cpu_fallbacks": {
+        "english": {
+          "count": 0,
+          "last_reason": null
+        }
+      }
+    },
+    "cases": [
+      {
+        "id": "en-refund",
+        "expectedChoice": "billing",
+        "expectedYes": true,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "english",
+          "revision": 1,
+          "latencyMs": 1189,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "billing",
+              "probabilities": {
+                "billing": 0.9358,
+                "technical": 0.0642
+              },
+              "confidence": 0.6562,
+              "answer_confidence": 0.9358,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.836,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.0201,
+                "1": 0.1238,
+                "2": 0.8561
+              },
+              "confidence": 0.5721,
+              "answer_confidence": 0.8561,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.9331,
+              "confidence": 0.9331,
+              "answer_confidence": 0.9331,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 144,
+            "output_tokens": 0,
+            "state_tokens": 12,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      },
+      {
+        "id": "en-crash",
+        "expectedChoice": "technical",
+        "expectedYes": false,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "english",
+          "revision": 1,
+          "latencyMs": 78,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "technical",
+              "probabilities": {
+                "billing": 0.1204,
+                "technical": 0.8796
+              },
+              "confidence": 0.4695,
+              "answer_confidence": 0.8796,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.4731,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.0778,
+                "1": 0.3713,
+                "2": 0.5509
+              },
+              "confidence": 0.1853,
+              "answer_confidence": 0.5509,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.1031,
+              "confidence": 0.8969,
+              "answer_confidence": 0.8969,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 147,
+            "output_tokens": 0,
+            "state_tokens": 13,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      },
+      {
+        "id": "zh-refund",
+        "expectedChoice": "billing",
+        "expectedYes": true,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "multilingual",
+          "revision": 1,
+          "latencyMs": 54078,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "billing",
+              "probabilities": {
+                "billing": 0.9999,
+                "technical": 0.0001
+              },
+              "confidence": 0.9991,
+              "answer_confidence": 0.9999,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.1849,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.1225,
+                "1": 0.5701,
+                "2": 0.3074
+              },
+              "confidence": 0.1442,
+              "answer_confidence": 0.5701,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.9821,
+              "confidence": 0.9821,
+              "answer_confidence": 0.9821,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 155,
+            "output_tokens": 0,
+            "state_tokens": 16,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      },
+      {
+        "id": "zh-crash",
+        "expectedChoice": "technical",
+        "expectedYes": false,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "multilingual",
+          "revision": 1,
+          "latencyMs": 108,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "technical",
+              "probabilities": {
+                "billing": 0.0031,
+                "technical": 0.9969
+              },
+              "confidence": 0.9695,
+              "answer_confidence": 0.9969,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.0637,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.0788,
+                "1": 0.7786,
+                "2": 0.1426
+              },
+              "confidence": 0.3876,
+              "answer_confidence": 0.7786,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.0057,
+              "confidence": 0.9943,
+              "answer_confidence": 0.9943,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 140,
+            "output_tokens": 0,
+            "state_tokens": 11,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      }
+    ],
+    "warm": [
+      90,
+      66,
+      55,
+      52,
+      58,
+      59,
+      60,
+      56,
+      52,
+      52,
+      55,
+      52,
+      54,
+      59,
+      58,
+      59,
+      56,
+      52,
+      53,
+      55
+    ],
+    "checks": {},
+    "performance": {
+      "p50": 55,
+      "p95": 66,
+      "samples": 20
+    },
+    "status": "failed",
+    "error": "Expected \"actual\" to be strictly unequal to:\n\n'laya-rl-agent'"
+  },
+  "confirmedRun": {
+    "at": "2026-10-05T03:56:50.100Z",
+    "health": {
+      "status": "ok",
+      "loaded": [
+        "english",
+        "multilingual"
+      ],
+      "revisions": {
+        "english": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+        "multilingual": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+      },
+      "device": "mps",
+      "device_is_preference": false,
+      "checkpoint_devices": {
+        "english": "mps",
+        "multilingual": "mps"
+      },
+      "cpu_fallbacks": {
+        "english": {
+          "count": 0,
+          "last_reason": null
+        },
+        "multilingual": {
+          "count": 0,
+          "last_reason": null
+        }
+      }
+    },
+    "cases": [
+      {
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "id": "en-refund",
+        "expectedChoice": "billing",
+        "expectedYes": true,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "english",
+          "revision": 1,
+          "latencyMs": 324,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "billing",
+              "probabilities": {
+                "billing": 0.9358,
+                "technical": 0.0642
+              },
+              "confidence": 0.6562,
+              "answer_confidence": 0.9358,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.836,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.0201,
+                "1": 0.1238,
+                "2": 0.8561
+              },
+              "confidence": 0.5721,
+              "answer_confidence": 0.8561,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.9331,
+              "confidence": 0.9331,
+              "answer_confidence": 0.9331,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 144,
+            "output_tokens": 0,
+            "state_tokens": 12,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      },
+      {
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "id": "en-crash",
+        "expectedChoice": "technical",
+        "expectedYes": false,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "english",
+          "revision": 1,
+          "latencyMs": 67,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "technical",
+              "probabilities": {
+                "billing": 0.1204,
+                "technical": 0.8796
+              },
+              "confidence": 0.4695,
+              "answer_confidence": 0.8796,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.4731,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.0778,
+                "1": 0.3713,
+                "2": 0.5509
+              },
+              "confidence": 0.1853,
+              "answer_confidence": 0.5509,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.1031,
+              "confidence": 0.8969,
+              "answer_confidence": 0.8969,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 147,
+            "output_tokens": 0,
+            "state_tokens": 13,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      },
+      {
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "id": "zh-refund",
+        "expectedChoice": "billing",
+        "expectedYes": true,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "multilingual",
+          "revision": 1,
+          "latencyMs": 164,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "billing",
+              "probabilities": {
+                "billing": 0.9999,
+                "technical": 0.0001
+              },
+              "confidence": 0.9991,
+              "answer_confidence": 0.9999,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.1849,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.1225,
+                "1": 0.5701,
+                "2": 0.3074
+              },
+              "confidence": 0.1442,
+              "answer_confidence": 0.5701,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.9821,
+              "confidence": 0.9821,
+              "answer_confidence": 0.9821,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 155,
+            "output_tokens": 0,
+            "state_tokens": 16,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      },
+      {
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "id": "zh-crash",
+        "expectedChoice": "technical",
+        "expectedYes": false,
+        "choiceCorrect": true,
+        "noulCorrect": true,
+        "result": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "multilingual",
+          "revision": 1,
+          "latencyMs": 61,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "technical",
+              "probabilities": {
+                "billing": 0.0031,
+                "technical": 0.9969
+              },
+              "confidence": 0.9695,
+              "answer_confidence": 0.9969,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.0637,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.0788,
+                "1": 0.7786,
+                "2": 0.1426
+              },
+              "confidence": 0.3876,
+              "answer_confidence": 0.7786,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.0057,
+              "confidence": 0.9943,
+              "answer_confidence": 0.9943,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 140,
+            "output_tokens": 0,
+            "state_tokens": 11,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      }
+    ],
+    "warm": [
+      69,
+      81,
+      91,
+      76,
+      79,
+      70,
+      70,
+      75,
+      71,
+      81,
+      82,
+      80,
+      81,
+      78,
+      73,
+      70,
+      75,
+      72,
+      75,
+      73
+    ],
+    "checks": {
+      "toolSwitch": {
+        "english": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "english",
+          "revision": 1,
+          "latencyMs": 75,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "billing",
+              "probabilities": {
+                "billing": 0.9358,
+                "technical": 0.0642
+              },
+              "confidence": 0.6562,
+              "answer_confidence": 0.9358,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.836,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.0201,
+                "1": 0.1238,
+                "2": 0.8561
+              },
+              "confidence": 0.5721,
+              "answer_confidence": 0.8561,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.9331,
+              "confidence": 0.9331,
+              "answer_confidence": 0.9331,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 144,
+            "output_tokens": 0,
+            "state_tokens": 12,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        },
+        "multilingual": {
+          "actualModel": "laya-rl-agent",
+          "providerId": "laya",
+          "modelConfigId": "multilingual",
+          "revision": 1,
+          "latencyMs": 47,
+          "answers": {
+            "department": {
+              "type": "choice",
+              "choice": "billing",
+              "probabilities": {
+                "billing": 0.9999,
+                "technical": 0.0001
+              },
+              "confidence": 0.9991,
+              "answer_confidence": 0.9999,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "score": 1.1849,
+              "legend": {
+                "0": "Not urgent",
+                "1": "Normal priority",
+                "2": "Urgent: immediate action requested"
+              },
+              "probabilities": {
+                "0": 0.1225,
+                "1": 0.5701,
+                "2": 0.3074
+              },
+              "confidence": 0.1442,
+              "answer_confidence": 0.5701,
+              "action": {
+                "act_probability": 1
+              }
+            },
+            "refund": {
+              "type": "noul",
+              "noul": 0.9821,
+              "confidence": 0.9821,
+              "answer_confidence": 0.9821,
+              "action": {
+                "act_probability": 1
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 155,
+            "output_tokens": 0,
+            "state_tokens": 16,
+            "state_tokens_dropped": 0,
+            "truncated": false,
+            "truncated_questions": []
+          },
+          "confidenceSemantics": "normalized-entropy"
+        }
+      },
+      "disabled": true,
+      "revoked": true
+    },
+    "performance": {
+      "p50": 75,
+      "p95": 82,
+      "samples": 20
+    },
+    "healthAfter": {
+      "status": "ok",
+      "loaded": [
+        "english",
+        "multilingual"
+      ],
+      "revisions": {
+        "english": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+        "multilingual": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+      },
+      "device": "mps",
+      "device_is_preference": false,
+      "checkpoint_devices": {
+        "english": "mps",
+        "multilingual": "mps"
+      },
+      "cpu_fallbacks": {
+        "english": {
+          "count": 0,
+          "last_reason": null
+        },
+        "multilingual": {
+          "count": 0,
+          "last_reason": null
+        }
+      }
+    },
+    "status": "passed"
+  }
+}

@@ -1,3 +1,6 @@
+import { fileURLToPath } from "node:url"
+import { existsSync } from "node:fs"
+import { decisionBroker } from "../system-one/broker.js"
 import { spawn, execFileSync, type ChildProcess } from "node:child_process"
 import { attachJsonlLineReader, serializeJsonLine } from "./jsonl.js"
 
@@ -24,6 +27,9 @@ export type PiAdapterEvent =
   | { t: "rpc_error"; message: string }
 
 export class PiAdapter {
+  private decisionGrant?: Awaited<ReturnType<typeof decisionBroker.grant>>
+  private starting: Promise<void> | null = null
+  private generation = 0
   private proc: ChildProcess | null = null
   private stopReader: (()=>void) | null = null
   private pending = new Map<string|number, {resolve:(v:RpcResponse)=>void, reject:(e:Error)=>void}>()
@@ -56,17 +62,34 @@ export class PiAdapter {
   }
 
   async start(): Promise<void> {
+    if (this.starting) return this.starting
+    this.starting = this.startProcess()
+    try { await this.starting } finally { this.starting = null }
+  }
+
+  private async startProcess(): Promise<void> {
     if (this.proc) return
+    const generation = this.generation
     const {cmd, args} = this.resolveCli()
+    const built = fileURLToPath(new URL("../system-one/pi-extension.js", import.meta.url))
+    const source = fileURLToPath(new URL("../system-one/pi-extension.ts", import.meta.url))
+    const extension = existsSync(built) ? built : source
+    if (!existsSync(extension)) throw new Error("System One extension unavailable")
+    this.decisionGrant = await decisionBroker.grant(this.cwd)
+    if (generation !== this.generation) { this.decisionGrant.revoke(); this.decisionGrant = undefined; throw new Error("pi rpc start cancelled") }
+    args.push("--extension", extension)
     this.stderr = ""
-    const proc = spawn(cmd, args, { cwd: this.cwd, stdio: ["pipe","pipe","pipe"], env: { ...process.env } })
+    const proc = spawn(cmd, args, { cwd: this.cwd, stdio: ["pipe","pipe","pipe"], env: { ...process.env, PI_UI_DECISION_URL: this.decisionGrant.url, PI_UI_DECISION_TOKEN: this.decisionGrant.token } })
     this.proc = proc
     proc.stderr?.on("data", d => {
       // keep only the tail: a chatty pi must not grow this without bound
       this.stderr = (this.stderr + d.toString()).slice(-STDERR_KEEP)
       process.stderr.write(d)
     })
+    const grant = this.decisionGrant
+    proc.on("error", () => grant?.revoke())
     proc.on("exit", (code, sig) => {
+      grant?.revoke()
       if (this.proc !== proc) return // superseded by a restart
       const err = new Error(`pi rpc exited code=${code} sig=${sig} stderr=${this.stderr.slice(-800)}`)
       for (const [, p] of this.pending) p.reject(err)
@@ -108,6 +131,8 @@ export class PiAdapter {
   }
 
   stop() {
+    this.generation++
+    this.decisionGrant?.revoke(); this.decisionGrant = undefined
     this.stopReader?.(); this.stopReader = null
     const proc = this.proc
     this.proc = null

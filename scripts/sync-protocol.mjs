@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url"
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 
 const PAIRS = [
+  ["shell-service/src/system-one/types.ts", "src/lib/system-one/types.ts"],
   ["shell-service/src/session-entry-schema.ts", "src/lib/session-entry-schema.ts"],
   ["shell-service/src/provider-map.ts", "src/lib/provider-map.ts"],
   ["shell-service/src/ws-protocol.ts", "src/lib/ws-protocol.ts"],

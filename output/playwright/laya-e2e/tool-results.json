@@ -1,0 +1,84 @@
+[
+  {
+    "session": "2026-10-05T07-16-10-063Z_01a10aeb-86cf-77ce-9ad9-ea71b61ec87e.jsonl",
+    "entryId": "9baa93de",
+    "isError": true,
+    "content": [
+      {
+        "type": "text",
+        "text": "Validation failed for tool \"system_one_evaluate\":\n  - questions: must not have additional properties\n\nReceived arguments:\n{\n  \"questions\": {\n    \"department\": {\n      \"choice\": {\n        \"instructions\": \"Which team should handle this?\"\n      }\n    },\n    \"refund\": {\n      \"noul\": {\n        \"instructions\": \"Is the customer asking for a refund?\"\n      }\n    },\n    \"urgency\": {\n      \"score\": {\n        \"criteria\": [\n          \"Not urgent\",\n          \"Normal priority\",\n          \"Urgent immediate action\"\n        ],\n        \"instructions\": \"How urgent is the request?\"\n      }\n    }\n  },\n  \"state\": \"我被重复扣款了，请立即退还多收的钱。\"\n}"
+      }
+    ],
+    "details": {}
+  },
+  {
+    "session": "2026-10-05T07-26-32-117Z_01a10af5-04b5-7670-aaed-937619b435f1.jsonl",
+    "entryId": "d1bd976e",
+    "isError": false,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"actualModel\":\"laya-rl-agent\",\"providerId\":\"0afc87b5-f62d-4660-ab46-e1e094825623\",\"modelConfigId\":\"dd8ede21-be97-49d1-b34b-92f5ec942537\",\"revision\":2,\"latencyMs\":440,\"answers\":{\"department\":{\"type\":\"choice\",\"choice\":\"billing\",\"probabilities\":{\"billing\":0.9994,\"technical\":0.0006},\"confidence\":0.9926,\"answer_confidence\":0.9994,\"action\":{\"act_probability\":1}},\"refund\":{\"type\":\"noul\",\"noul\":0.9821,\"confidence\":0.9821,\"answer_confidence\":0.9821,\"action\":{\"act_probability\":1}},\"urgency\":{\"type\":\"score\",\"score\":1.326,\"legend\":{\"0\":\"Not urgent\",\"1\":\"Normal priority\",\"2\":\"Urgent immediate action\"},\"probabilities\":{\"0\":0.0818,\"1\":0.5104,\"2\":0.4078},\"confidence\":0.1682,\"answer_confidence\":0.5104,\"action\":{\"act_probability\":1}}},\"usage\":{\"input_tokens\":144,\"output_tokens\":0,\"state_tokens\":16,\"state_tokens_dropped\":0,\"truncated\":false,\"truncated_questions\":[]},\"confidenceSemantics\":\"vendor-defined\"}"
+      }
+    ],
+    "details": {
+      "actualModel": "laya-rl-agent",
+      "providerId": "0afc87b5-f62d-4660-ab46-e1e094825623",
+      "modelConfigId": "dd8ede21-be97-49d1-b34b-92f5ec942537",
+      "revision": 2,
+      "latencyMs": 440,
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "billing",
+          "probabilities": {
+            "billing": 0.9994,
+            "technical": 0.0006
+          },
+          "confidence": 0.9926,
+          "answer_confidence": 0.9994,
+          "action": {
+            "act_probability": 1
+          }
+        },
+        "refund": {
+          "type": "noul",
+          "noul": 0.9821,
+          "confidence": 0.9821,
+          "answer_confidence": 0.9821,
+          "action": {
+            "act_probability": 1
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.326,
+          "legend": {
+            "0": "Not urgent",
+            "1": "Normal priority",
+            "2": "Urgent immediate action"
+          },
+          "probabilities": {
+            "0": 0.0818,
+            "1": 0.5104,
+            "2": 0.4078
+          },
+          "confidence": 0.1682,
+          "answer_confidence": 0.5104,
+          "action": {
+            "act_probability": 1
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 144,
+        "output_tokens": 0,
+        "state_tokens": 16,
+        "state_tokens_dropped": 0,
+        "truncated": false,
+        "truncated_questions": []
+      },
+      "confidenceSemantics": "vendor-defined"
+    }
+  }
+]

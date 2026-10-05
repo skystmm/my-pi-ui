@@ -39,13 +39,14 @@ type PendingModel = { id: string; displayName: string; thinking: ThinkingLevel }
 type Props = {
   open: boolean
   onClose: () => void
+  onDecision?: () => void
   providers: ProviderAccount[]
   models: ModelEntry[]
   onAddProvider: (draft: ProviderDraft, models: PendingModel[], apiKey?: string) => void
   onRemoveProvider: (id: string) => void
 }
 
-export function ProviderDrawer({ open, onClose, providers, models, onAddProvider, onRemoveProvider }: Props) {
+export function ProviderDrawer({ open, onClose, providers, models, onAddProvider, onRemoveProvider, onDecision }: Props) {
   const [providerPreset, setProviderPreset] = useState<ProviderType>("openai-compatible")
   const [providerName, setProviderName] = useState("")
   const [baseUrl, setBaseUrl] = useState("")
@@ -121,7 +122,8 @@ export function ProviderDrawer({ open, onClose, providers, models, onAddProvider
       <div data-drawer-close onClick={onClose} className="flex-1 bg-black/50 backdrop-blur-[1px]" />
       <div className="w-[560px] max-w-[92vw] h-full border-l flex flex-col shadow-2xl" style={{ background: "var(--bg)", borderColor: "var(--border)", boxShadow: "-16px 0 48px rgba(0,0,0,0.6)" }}>
         <div className="h-[48px] flex items-center gap-3 px-4 border-b shrink-0" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-          <span className="text-[13px] font-medium">模型与服务商</span>
+          <span className="text-[13px] font-medium">模型与服务商 · 聊天</span>
+          <button onClick={onDecision} className="text-xs underline">决策配置 →</button>
           <span className="mono text-[11px] px-1.5 py-0.5 rounded border text-zinc-400" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>{providers.length} providers · {models.length} models</span>
           <span className="ml-auto flex items-center gap-2">
             <button onClick={onClose} className="w-7 h-7 grid place-items-center rounded hover:bg-[var(--bg-hover)] text-zinc-400">✕</button>

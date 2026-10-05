@@ -10,6 +10,7 @@
 - **对话**：发送消息和图片、查看流式回复与工具调用、停止运行中的请求。
 - **斜杠命令**：输入 `/` 可筛选命令，用方向键、Enter 或 Tab 补全。支持 `/new`、`/model`、`/thinking`、`/compact`、`/clone`、`/fork`、`/tree`，也会列出 Pi RPC 返回的扩展、提示模板和技能命令。
 - **模型配置**：查看并切换可用模型，配置服务商、模型和凭据，测试连接。
+- **System One 决策模型**：独立配置服务商与模型，通过全局默认或当前项目覆盖切换；支持 TypeSafe Jev、本地 System One HTTP 和 OpenRouter Decisions。
 - **扩展与技能**：查看 Pi 资源并管理配置；展示扩展发起的部分交互请求。
 - **上下文与文件**：查看用量、会话分支链，以及当前项目内的文件列表。
 
@@ -37,6 +38,21 @@ npm run dev:all
 4. 在侧边栏归档项目或会话，需要时从归档区恢复。
 
 项目和会话来自 Pi 的 `~/.pi/agent` 数据。归档状态保存在 `~/.pi/agent/pi-ui-archive.json`；模型与凭据沿用 Pi 的配置文件。本项目不会把这些本地数据放入仓库。
+
+## System One 决策模型
+
+点击顶部 **决策配置**，或在聊天模型配置中进入 **决策**：
+
+1. 添加 TypeSafe Jev、本地服务或 OpenRouter 服务商，填写完整 endpoint、鉴权方式和超时。
+2. 添加模型，填写远端模型 ID、支持的问题类型（choice / score / noul）和置信度语义。本地单模型服务可以省略远端 ID；OpenRouter 必须填写其 Decisions 模型 ID。
+3. 启用决策工具，设置全局默认并保存。点击 **测试模型（可能计费）** 查看实际模型、概率分布、耗时及 usage。
+4. 打开项目后，可在顶部选择该项目的模型、跟随全局或关闭。选择立即影响下一次调用，无需重启 Pi；已发出的请求使用原配置。
+
+Shell 启动的 Pi 会加载 `system_one_evaluate` 工具。工具接受 `state` 和 `questions`，由 Shell 根据项目选择解析模型；结果显示在对话工具卡片中。概率只供判断参考，不会自动授予执行权限。此功能不改变聊天模型。
+
+配置保存在 Pi agent 目录下的 `pi-ui/system-one.json`，API Key 单独保存在 `pi-ui/system-one-auth.json`（0600），不会返回 UI。环境变量方式读取 **Shell Service 进程** 的环境；修改变量后需重启 Shell。当前项目覆盖与最近测试状态只在本次 Shell 生命周期内保留。配置保存有 revision 冲突检测，其他窗口修改后应刷新再编辑。
+
+首批支持原生 System One HTTP 与 OpenRouter Decisions，请勿填写 Chat Completions 地址。没有自动重试或模型回退；每服务商最多同时处理两次工具请求，超限返回 busy。手动测试不占工具并发槽。真实模型冒烟和效果评估需自行提供凭据或运行本地服务，验证场景见 [设计与实施记录](SYSTEM_ONE_DESIGN.md)。
 
 ## 开发与验证
 

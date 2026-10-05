@@ -1,3 +1,4 @@
+import { DecisionResult, asDecisionResult } from '../model-config/DecisionResult'
 import { useState } from "react"
 import {
   entryLabel, messageText, thinkingText, toolCallsOf,
@@ -89,6 +90,7 @@ function ToolCallCard({ call }: { call: ToolCall }) {
 function ToolResultCard({ message }: { message: AgentMessage & { role: "toolResult" } }) {
   const [open, setOpen] = useState(false)
   const text = messageText(message)
+  const decision = message.toolName === "system_one_evaluate" && !message.isError ? asDecisionResult(message.details) : null
   return (
     <div className="rounded-lg border" style={{ background: "var(--bg)", borderColor: message.isError ? "rgba(239,68,68,0.25)" : "var(--border)" }}>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2 px-3 py-2 text-left">
@@ -97,7 +99,8 @@ function ToolResultCard({ message }: { message: AgentMessage & { role: "toolResu
         <span className="mono text-[10px] text-zinc-600 truncate hidden sm:inline">{text.slice(0, 60)}</span>
         <span className="ml-auto mono text-[11px] text-zinc-600">{open ? "▴" : "▾"}</span>
       </button>
-      {open && <pre className="px-3 pb-2 mono text-[11px] whitespace-pre-wrap break-all" style={{ color: message.isError ? "#fca5a5" : "#a3a3a3" }}>{text.slice(0, 4000)}</pre>}
+      {open && decision && <div className="px-3 pb-2"><DecisionResult result={decision}/></div>}
+      {open && !decision && <pre className="px-3 pb-2 mono text-[11px] whitespace-pre-wrap break-all" style={{ color: message.isError ? "#fca5a5" : "#a3a3a3" }}>{text.slice(0, 4000)}</pre>}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { DecisionPanel } from "./features/model-config/DecisionPanel"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { wsClient } from "./lib/ws-client"
 import { builtinCommands, outgoingPrompt, parseBuiltinCommand } from "./lib/builtin-commands"
@@ -35,6 +36,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [railCollapsed, setRailCollapsed] = useState(false)
   const [railTab, setRailTab] = useState<RailTab>("tree")
+  const [decisionOpenRequest, setDecisionOpenRequest] = useState(0)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [extensionDrawerOpen, setExtensionDrawerOpen] = useState(false)
   const [settingsScope, setSettingsScope] = useState<"global" | "project">("global")
@@ -413,6 +415,7 @@ export default function App() {
         onTrustProject={() => handleTrustProject(true)}
       />
 
+      <DecisionPanel cwd={curProject?.cwd ?? ""} openRequest={decisionOpenRequest} onChat={() => setDrawerOpen(true)} />
       <div className="flex flex-1 min-h-0">
         {!sidebarCollapsed && (
           <ProjectSidebar
@@ -492,6 +495,7 @@ export default function App() {
       </div>
 
       <ProviderDrawer
+        onDecision={() => { setDrawerOpen(false); setDecisionOpenRequest(n => n + 1) }}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         providers={providers}

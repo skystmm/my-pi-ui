@@ -13,7 +13,7 @@ export class DecisionStore {
   private tests = new Map<string, { revision: number; at: string; ok: boolean; code?: string }>()
   private selections = new Map<string, string | null>()
   constructor(dir = join(getAgentDir(), 'pi-ui')) { this.configPath = join(dir, 'system-one.json'); this.authPath = join(dir, 'system-one-auth.json') }
-  snapshot(): Config { const cfg = read(this.configPath, empty()); const auth = read<Record<string, string>>(this.authPath, {}); return { ...cfg, providers: cfg.providers.map(p => ({ ...p, credentialStatus: p.auth.mode === 'none' ? 'none' : (p.auth.mode === 'env' ? !!process.env[p.auth.envVar ?? '']?.trim() : !!auth[p.auth.credentialId ?? '']) ? 'configured' : 'missing' })), models: cfg.models.map(m => ({ ...m, lastTest: this.tests.get(m.id) })) } }
+  snapshot(): Config { const cfg = read(this.configPath, empty()); const auth = read<Record<string, string>>(this.authPath, {}); return { ...cfg, providers: cfg.providers.map(p => ({ ...p, credentialStatus: p.protocol === 'pi-native' ? 'pi' : p.auth.mode === 'none' ? 'none' : (p.auth.mode === 'env' ? !!process.env[p.auth.envVar ?? '']?.trim() : !!auth[p.auth.credentialId ?? '']) ? 'configured' : 'missing' })), models: cfg.models.map(m => ({ ...m, lastTest: this.tests.get(m.id) })) } }
   recordTest(id: string, revision: number, ok: boolean, code?: string) { this.tests.set(id, { revision, at: new Date().toISOString(), ok, code }) }
   selection(cwd: string) { const cfg = this.snapshot(); return { scope: this.selections.has(cwd) ? 'project' : 'global', modelId: cfg.enabled ? (this.selections.has(cwd) ? this.selections.get(cwd) : cfg.defaultModelId) : null } }
   select(cwd: string, id: string | null | undefined) { if (id && !this.snapshot().models.some(m => m.id === id)) throw new DecisionError('unknown_model'); if (id === undefined) this.selections.delete(cwd); else this.selections.set(cwd, id) }
@@ -25,7 +25,7 @@ export class DecisionStore {
     let key: string | undefined
     if (provider.auth.mode === 'env') key = process.env[provider.auth.envVar ?? '']
     if (provider.auth.mode === 'secret') key = read<Record<string, string>>(this.authPath, {})[provider.auth.credentialId ?? '']
-    if (provider.auth.mode !== 'none' && !key?.trim()) throw new DecisionError('missing_credential')
+    if (provider.auth.mode !== 'none' && provider.auth.mode !== 'pi' && !key?.trim()) throw new DecisionError('missing_credential')
     return { provider, model, revision: cfg.revision, key }
   }
   resolveModel(id: string): Resolved { const fake = `test:${randomUUID()}`; this.selections.set(fake, id); try { return this.resolve(fake) } finally { this.selections.delete(fake) } }
@@ -39,10 +39,12 @@ export class DecisionStore {
       const auth = read<Record<string, string>>(this.authPath, {}); const nextAuth = { ...auth }; const ids = new Set<string>()
       const providers = draft.providers.map(p => {
         if (!p.id || ids.has(p.id) || !p.name?.trim()) throw new DecisionError('invalid_provider'); ids.add(p.id)
-        const url = new URL(p.endpoint)
-        if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash || !['systemone-http', 'openrouter-decisions'].includes(p.protocol)) throw new DecisionError('invalid_endpoint')
+        const native = p.protocol === 'pi-native'
+        if (native && (!p.piProviderId || !/^[a-z0-9._-]+$/i.test(p.piProviderId) || p.auth?.mode !== 'pi' || p.apiKey)) throw new DecisionError('invalid_provider')
+        const url = new URL(native ? `pi://${p.piProviderId}` : p.endpoint)
+        if (!['http:', 'https:', ...(native ? ['pi:'] : [])].includes(url.protocol) || url.username || url.password || url.hash || !['systemone-http', 'openrouter-decisions', 'pi-native'].includes(p.protocol)) throw new DecisionError('invalid_endpoint')
         if (!Number.isInteger(p.timeoutMs) || p.timeoutMs < 1000 || p.timeoutMs > 120000) throw new DecisionError('invalid_timeout')
-        if (!p.auth || !['none', 'env', 'secret'].includes(p.auth.mode)) throw new DecisionError('invalid_auth')
+        if (!p.auth || !['none', 'env', 'secret', ...(native ? ['pi'] : [])].includes(p.auth.mode)) throw new DecisionError('invalid_auth')
         if (p.auth.mode === 'env' && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(p.auth.envVar ?? '')) throw new DecisionError('invalid_env')
         const previous = current.providers.find(x => x.id === p.id); const authRef = { ...p.auth }; delete authRef.credentialId
         if (p.auth.mode === 'secret') {
@@ -50,14 +52,14 @@ export class DecisionStore {
           else if (previous?.auth.mode === 'secret' && previous.auth.credentialId) authRef.credentialId = previous.auth.credentialId
           else throw new DecisionError('missing_credential')
         }
-        return { id: p.id, name: p.name.trim(), protocol: p.protocol, endpoint: url.toString(), auth: authRef, timeoutMs: p.timeoutMs }
+        return { id: p.id, name: p.name.trim(), protocol: p.protocol, piProviderId: native ? p.piProviderId : undefined, endpoint: url.toString(), auth: authRef, timeoutMs: p.timeoutMs }
       })
       const modelIds = new Set<string>()
       const models = draft.models.map(m => {
         if (!m.id || modelIds.has(m.id) || !m.name?.trim() || !ids.has(m.providerId)) throw new DecisionError('invalid_model'); modelIds.add(m.id)
         if (!Array.isArray(m.questionTypes) || !m.questionTypes.length || m.questionTypes.some(t => !['choice', 'score', 'noul'].includes(t))) throw new DecisionError('invalid_capability')
         if (!['unknown', 'vendor-defined', 'normalized-entropy', 'max-probability'].includes(m.confidenceSemantics)) throw new DecisionError('invalid_capability')
-        if (providers.find(p => p.id === m.providerId)?.protocol === 'openrouter-decisions' && !m.remoteModel?.trim()) throw new DecisionError('missing_model_id')
+        if (providers.find(p => p.id === m.providerId)?.protocol !== 'systemone-http' && !m.remoteModel?.trim()) throw new DecisionError('missing_model_id')
         for (const n of [m.maxQuestions, m.maxOptions]) if (n !== undefined && (!Number.isInteger(n) || n < 1 || n > 255)) throw new DecisionError('invalid_limit')
         return { id: m.id, name: m.name.trim(), providerId: m.providerId, remoteModel: m.remoteModel?.trim() || undefined, questionTypes: m.questionTypes, confidenceSemantics: m.confidenceSemantics, maxQuestions: m.maxQuestions, maxOptions: m.maxOptions }
       })

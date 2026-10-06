@@ -162,7 +162,7 @@ export function Transcript(props: Props) {
           </div>
 
           <div className="mono text-[11px] text-zinc-600 text-center pb-2">
-            pi 0.85 · {projectDisplayName} · {entries.length} entries · 数据来源 ~/.pi/agent/sessions 与 pi rpc
+            Pi 1.0.4 · {projectDisplayName} · {entries.length} entries · 数据来源 ~/.pi/agent/sessions 与 pi rpc
           </div>
         </div>
       </div>

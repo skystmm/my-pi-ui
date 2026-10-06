@@ -1,0 +1,113 @@
+{
+  "pi": "1.0.4",
+  "checks": [
+    {
+      "name": "models/state/commands",
+      "status": "pass",
+      "detail": {
+        "modelShape": "object"
+      }
+    },
+    {
+      "name": "new_session + set_model + set_thinking",
+      "status": "pass"
+    },
+    {
+      "name": "stream + LF framing + entries + stats + tree",
+      "status": "pass",
+      "detail": {
+        "entries": 6,
+        "events": [
+          "agent_start",
+          "turn_start",
+          "message_start",
+          "message_end",
+          "message_update",
+          "turn_end",
+          "agent_end",
+          "agent_settled"
+        ]
+      }
+    },
+    {
+      "name": "extension dialog round-trip",
+      "status": "pass"
+    },
+    {
+      "name": "hosted s1-eval validate without LLM",
+      "status": "pass"
+    },
+    {
+      "name": "clone + switch_session",
+      "status": "pass"
+    },
+    {
+      "name": "fork + switch_session",
+      "status": "pass"
+    },
+    {
+      "name": "manual compaction",
+      "status": "pass"
+    },
+    {
+      "name": "context_edit preserved and applied by Pi",
+      "status": "pass",
+      "detail": {
+        "entry": {
+          "type": "context_edit",
+          "id": "044dc40d",
+          "parentId": "97d3d9b5",
+          "timestamp": "2026-10-06T14:59:42.671Z",
+          "targetId": "3fbd5e0f",
+          "replacement": null
+        }
+      }
+    },
+    {
+      "name": "stop after queued steer",
+      "status": "pass"
+    },
+    {
+      "name": "UI create_session model metadata",
+      "status": "pass"
+    },
+    {
+      "name": "UI clone selects the cloned session for the next prompt",
+      "status": "pass"
+    },
+    {
+      "name": "interactive abort restores queued text",
+      "status": "pass"
+    },
+    {
+      "name": "Pi native classifier transport, schema and usage",
+      "status": "pass"
+    },
+    {
+      "name": "Agent System One tool calls selected native and optional real Laya providers",
+      "status": "pass"
+    },
+    {
+      "name": "Pi hosted evaluation runs all configured decision providers without chat calls",
+      "status": "pass"
+    },
+    {
+      "name": "Pi and UI accept the same Azure configuration",
+      "status": "pass"
+    }
+  ],
+  "stop": {
+    "requestsAfterAbort": 1,
+    "agentStarts": 1,
+    "queuedReachedModel": false
+  },
+  "evaluation": {
+    "completed": 18,
+    "errors": 0,
+    "modelIds": [
+      "native",
+      "laya-english",
+      "laya-multilingual"
+    ]
+  }
+}

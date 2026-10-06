@@ -4,7 +4,7 @@
 // and then forces a fresh pi process so the next command sees the new catalog.
 import { liveSessions } from "../pi-adapter/index.js"
 import { mutateModelsConfig, verifyModelsConfigWritten, loadModelsConfig, ModelsConfigError, BUILTIN_PROVIDER_IDS, type PiProviderDef } from "../models-config.js"
-import { storeApiKey, storeEnvKey, removeCredential, getApiKeyEntry } from "../credential-store.js"
+import { storeApiKey, storeEnvKey, removeCredential, getApiKeyEntry, readAuth } from "../credential-store.js"
 import { API_BY_TYPE, DEFAULT_BASE_BY_TYPE, providerIdFor } from "../providers.js"
 import { canonCwd } from "../project-scanner.js"
 import { validateProviderInput, validateModelId, setDefaultModel as persistDefaultModel, setModelThinking } from "../settings-service.js"
@@ -59,7 +59,6 @@ export async function upsertProvider(ctx: Ctx, cmd: Extract<ShellCommand, { t: "
             id: m.id.trim(),
             name: m.displayName?.trim() || undefined,
             reasoning: m.reasoning,
-            input: ["text"] as ("text" | "image")[],
             contextWindow: m.contextWindow,
             maxTokens: m.maxTokens,
           }
@@ -101,7 +100,7 @@ function isBuiltin(providerId: string): boolean {
 
 export async function removeProvider(ctx: Ctx, cmd: Extract<ShellCommand, { t: "remove_provider" }>) {
   const providerId = cmd.providerId
-  const entry = getApiKeyEntry(providerId)
+  const entry = readAuth()[providerId]
   try {
     await mutateModelsConfig((cur) => {
       if (!(providerId in cur.providers)) return cur
@@ -135,7 +134,6 @@ export async function upsertModel(ctx: Ctx, cmd: Extract<ShellCommand, { t: "ups
         id: m.id.trim(),
         name: m.displayName?.trim() || undefined,
         reasoning: m.reasoning,
-        input: ["text"] as ("text" | "image")[],
         contextWindow: m.contextWindow,
         maxTokens: m.maxTokens,
       }).filter(([, val]) => val !== undefined)) as { id: string }
@@ -212,6 +210,7 @@ export async function listAvailableModels(ctx: Ctx, cmd: Extract<ShellCommand, {
       }
     }).filter(m => m.provider && m.id)
     ctx.send({ t: "available_models", cwd, models })
+    ctx.broadcast({ t: "providers_snapshot", providers: providersSnapshot(models) })
     ctx.broadcast({ t: "models_snapshot", models: modelsSnapshot(models) })
   } catch (e) {
     ctx.fail("available_models_failed", (e as Error)?.message ?? "get_available_models failed")

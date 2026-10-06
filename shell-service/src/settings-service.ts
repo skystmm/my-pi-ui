@@ -164,6 +164,7 @@ export function validateExtensionInput(input: { source: string }): string | null
 }
 
 export function isPackageSource(source: string): boolean {
+  if (source.startsWith("builtin:")) return false
   const s = source.trim()
   return !(s.startsWith(".") || s.startsWith("/") || s.startsWith("~"))
 }

@@ -43,7 +43,8 @@ export function credentialSource(providerId: string): "stored" | "env" | "comman
 export function maskedKeyFor(providerId: string, fallback = ""): string {
   const e = getApiKeyEntry(providerId)
   if (!e) return fallback
-  if (e.key.startsWith("$") || e.key.startsWith("!")) return e.key
+  if (e.key.startsWith("!")) return "command（由 Pi 解析）"
+  if (e.key.startsWith("$")) return e.key
   return maskApiKey(e.key)
 }
 

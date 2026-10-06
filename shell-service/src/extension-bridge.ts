@@ -22,7 +22,7 @@ export function attachExtensionBridge(wss: WebSocketServer) {
       cwd: ev.cwd,
       requestId: String(payload["id"] ?? ""),
       extensionId: typeof payload["extensionId"] === "string" ? payload["extensionId"] : undefined,
-      kind: method as "select" | "confirm" | "input" | "notify" | "setStatus" | "setWidget" | "editor",
+      kind: method as Extract<import("./ws-protocol.js").ShellEvent, { t: "extension_ui_request" }>["kind"],
       data: { ...payload, blocking: BLOCKING_KINDS.has(method) },
     })
   })

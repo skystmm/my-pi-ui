@@ -1,3 +1,6 @@
+import { migratePi104Azure } from "./pi-104-migration.js"
+import { evalCommand } from "./system-one/eval/commands.js"
+import { evalService } from "./system-one/eval/service.js"
 import { decisionCommand } from "./system-one/commands.js"
 import { decisionStore } from "./system-one/store.js"
 import { createServer } from "node:http"
@@ -40,6 +43,7 @@ function catalogEvents(): ShellEvent[] {
 
 async function handleCommand(ctx: Ctx, cmd: ShellCommand): Promise<void> {
   switch (cmd.t) {
+    case "eval_command": return evalCommand(ctx, cmd)
     case "decision_command": return decisionCommand(ctx, cmd)
     // ---- projects & sessions ------------------------------------------------
     case "list_projects": return sessionCmds.listProjects(ctx)
@@ -114,7 +118,10 @@ const wss = createGuardedWebSocketServer(httpServer)
 
 attachExtensionBridge(wss)
 
+const migrationError = await migratePi104Azure().then(() => "", () => "Pi Azure 配置迁移失败；请检查冲突配置，原始文件已保留。")
+
 wss.on("connection", (ws) => {
+  if (migrationError) send(ws, { t: "error", code: "pi_104_migration_failed", message: migrationError })
   send(ws, { t: "projects_snapshot", projects: sessionCmds.projectsSnapshot() })
   for (const ev of catalogEvents()) send(ws, ev)
 
@@ -159,7 +166,11 @@ function normalizeStreamDelta(ev: Record<string, unknown>): StreamDelta | null {
   switch (ame["type"]) {
     case "text_delta": return { kind: "text", text: String(ame["delta"] ?? "") }
     case "thinking_delta": return { kind: "thinking", text: String(ame["delta"] ?? "") }
-    case "toolcall_start": return { kind: "tool", id: String(ame["id"] ?? ""), name: String(ame["toolName"] ?? "") }
+    case "toolcall_start": {
+      const partial = ame["partial"] as { content?: { id?: string; name?: string }[] } | undefined
+      const call = partial?.content?.[Number(ame["contentIndex"])]
+      return { kind: "tool", id: call?.id ?? "", name: call?.name ?? "" }
+    }
     case "done": return { kind: "done" }
     case "error": {
       const err = ame["error"] as { errorMessage?: unknown } | undefined
@@ -200,6 +211,7 @@ liveSessions.on((ev) => {
       const open = clientWatching(ev.cwd)
       if (open) void pushSessionTail(wss, open.projectId, open.sessionId)
       scheduleStatsPush(wss, ev.cwd)
+      if (kind === "agent_settled") broadcast(wss, { t: "agent_event", cwd: ev.cwd, event: payload })
       return
     }
     broadcast(wss, { t: "agent_event", cwd: ev.cwd, event: payload })
@@ -221,3 +233,5 @@ httpServer.on("error", (err: NodeJS.ErrnoException) => {
   }
   throw err
 })
+
+evalService.onProgress(run => broadcast(wss, { t: "eval_progress", run }))

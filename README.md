@@ -10,13 +10,14 @@
 - **对话**：发送消息和图片、查看流式回复与工具调用、停止运行中的请求。
 - **斜杠命令**：输入 `/` 可筛选命令，用方向键、Enter 或 Tab 补全。支持 `/new`、`/model`、`/thinking`、`/compact`、`/clone`、`/fork`、`/tree`，也会列出 Pi RPC 返回的扩展、提示模板和技能命令。
 - **模型配置**：查看并切换可用模型，配置服务商、模型和凭据，测试连接。
-- **System One 决策模型**：独立配置服务商与模型，通过全局默认或当前项目覆盖切换；支持 TypeSafe Jev、本地 System One HTTP 和 OpenRouter Decisions。
+- **System One 决策模型**：独立配置服务商与模型，通过全局默认或当前项目覆盖切换；支持 Pi 原生 classifier、TypeSafe Jev、本地 System One HTTP 和 OpenRouter Decisions。
+- **System One 模型测评**：Pi `/s1-eval` 与 UI 共用固定标签 runner，支持多模型对比、取消、分组指标和本地报告导出。
 - **扩展与技能**：查看 Pi 资源并管理配置；展示扩展发起的部分交互请求。
 - **上下文与文件**：查看用量、会话分支链，以及当前项目内的文件列表。
 
 ## 运行
 
-需要 Node.js `>=22.19.0` 和可通过 `PATH` 调用的 `pi` 命令。项目当前使用 `@earendil-works/pi-coding-agent` 的 RPC 接口；其他 Pi 发行版或版本可能不兼容。
+需要 Node.js `>=22.19.0` 和可通过 `PATH` 调用的 `pi` 命令。项目固定使用 `@earendil-works/pi-coding-agent@1.0.4` 的 RPC 与 SDK 接口。先执行 `npm install -g @earendil-works/pi-coding-agent@1.0.4`，并确认 `pi --version` 为 `1.0.4`；其他版本未纳入本次验证。
 
 ```bash
 git clone https://github.com/skystmm/my-pi-ui.git
@@ -43,7 +44,7 @@ npm run dev:all
 
 点击顶部 **决策配置**，或在聊天模型配置中进入 **决策**：
 
-1. 添加 TypeSafe Jev、本地服务或 OpenRouter 服务商，填写完整 endpoint、鉴权方式和超时。
+1. 添加服务商。Pi 原生 classifier 填写 Pi provider ID（如 `typesafe`），点击加载分类模型目录，复用 Pi 凭据；HTTP / OpenRouter 填写完整 endpoint、鉴权方式和超时。
 2. 添加模型，填写远端模型 ID、支持的问题类型（choice / score / noul）和置信度语义。本地单模型服务可以省略远端 ID；OpenRouter 必须填写其 Decisions 模型 ID。
 3. 启用决策工具，设置全局默认并保存。点击 **测试模型（可能计费）** 查看实际模型、概率分布、耗时及 usage。
 4. 打开项目后，可在顶部选择该项目的模型、跟随全局或关闭。选择立即影响下一次调用，无需重启 Pi；已发出的请求使用原配置。
@@ -52,7 +53,9 @@ Shell 启动的 Pi 会加载 `system_one_evaluate` 工具。工具接受 `state`
 
 配置保存在 Pi agent 目录下的 `pi-ui/system-one.json`，API Key 单独保存在 `pi-ui/system-one-auth.json`（0600），不会返回 UI。环境变量方式读取 **Shell Service 进程** 的环境；修改变量后需重启 Shell。当前项目覆盖与最近测试状态只在本次 Shell 生命周期内保留。配置保存有 revision 冲突检测，其他窗口修改后应刷新再编辑。
 
-首批支持原生 System One HTTP 与 OpenRouter Decisions，请勿填写 Chat Completions 地址。没有自动重试或模型回退；每服务商最多同时处理两次工具请求，超限返回 busy。手动测试不占工具并发槽。真实模型冒烟和效果评估需自行提供凭据或运行本地服务，验证场景见 [设计与实施记录](SYSTEM_ONE_DESIGN.md)。
+调用协议支持 Pi 原生 classifier、System One HTTP 与 OpenRouter Decisions。Pi 原生模式使用 Pi SDK 分类模型目录和认证解析；HTTP 模式请勿填写 Chat Completions 地址。没有自动重试或模型回退；每服务商最多同时处理两次请求，工具与手动测试超限返回 busy；测评等待空闲槽。真实模型冒烟和效果评估需自行提供凭据或运行本地服务，验证场景见 [设计与实施记录](SYSTEM_ONE_DESIGN.md)。
+
+模型测评使用方式与当前范围见 [测评插件说明](SYSTEM_ONE_EVAL.md)；测评不修改项目默认模型，也不通过聊天 LLM 执行。
 
 ## 开发与验证
 
@@ -60,9 +63,12 @@ Shell 启动的 Pi 会加载 `system_one_evaluate` 工具。工具接受 `state`
 npm run check       # 协议同步检查、类型检查、Shell Service 构建与测试
 npm run build       # 生成前端 dist/
 npm run build:shell # 生成 shell-service/dist/
+npm run test:pi-compat # 真实 Pi 1.0.4 RPC、扩展、原生 classifier 集成回归
 ```
 
 协议类型以 `shell-service/src/ws-protocol.ts` 为源，运行 `npm run sync:protocol` 更新前端镜像。
+
+Pi 1.0.4 适配范围、Azure 配置迁移与验证证据见 [适配说明](PI_1_0_4_ADAPTATION.md)。
 
 ## 安全边界
 

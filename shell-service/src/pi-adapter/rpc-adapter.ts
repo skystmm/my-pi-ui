@@ -1,3 +1,4 @@
+import { evalBroker } from "../system-one/eval/broker.js"
 import { fileURLToPath } from "node:url"
 import { existsSync } from "node:fs"
 import { decisionBroker } from "../system-one/broker.js"
@@ -27,6 +28,7 @@ export type PiAdapterEvent =
   | { t: "rpc_error"; message: string }
 
 export class PiAdapter {
+  private evalGrant?: Awaited<ReturnType<typeof evalBroker.grant>>
   private decisionGrant?: Awaited<ReturnType<typeof decisionBroker.grant>>
   private starting: Promise<void> | null = null
   private generation = 0
@@ -77,9 +79,15 @@ export class PiAdapter {
     if (!existsSync(extension)) throw new Error("System One extension unavailable")
     this.decisionGrant = await decisionBroker.grant(this.cwd)
     if (generation !== this.generation) { this.decisionGrant.revoke(); this.decisionGrant = undefined; throw new Error("pi rpc start cancelled") }
-    args.push("--extension", extension)
+    const evalBuilt = fileURLToPath(new URL("../system-one/eval/pi-extension.js", import.meta.url))
+    const evalSource = fileURLToPath(new URL("../system-one/eval/pi-extension.ts", import.meta.url))
+    const evalExtension = existsSync(evalBuilt) ? evalBuilt : evalSource
+    if (!existsSync(evalExtension)) { this.decisionGrant.revoke(); throw new Error("System One evaluation extension unavailable") }
+    try { this.evalGrant = await evalBroker.grant() } catch (error) { this.decisionGrant.revoke(); throw error }
+    if (generation !== this.generation) { this.evalGrant.revoke(); this.decisionGrant?.revoke(); throw new Error("pi rpc start cancelled") }
+    args.push("--extension", extension, "--extension", evalExtension)
     this.stderr = ""
-    const proc = spawn(cmd, args, { cwd: this.cwd, stdio: ["pipe","pipe","pipe"], env: { ...process.env, PI_UI_DECISION_URL: this.decisionGrant.url, PI_UI_DECISION_TOKEN: this.decisionGrant.token } })
+    const proc = spawn(cmd, args, { cwd: this.cwd, stdio: ["pipe","pipe","pipe"], env: { ...process.env, PI_UI_DECISION_URL: this.decisionGrant.url, PI_UI_DECISION_TOKEN: this.decisionGrant.token, PI_UI_EVAL_URL: this.evalGrant.url, PI_UI_EVAL_TOKEN: this.evalGrant.token } })
     this.proc = proc
     proc.stderr?.on("data", d => {
       // keep only the tail: a chatty pi must not grow this without bound
@@ -87,9 +95,10 @@ export class PiAdapter {
       process.stderr.write(d)
     })
     const grant = this.decisionGrant
-    proc.on("error", () => grant?.revoke())
+    const evalGrant = this.evalGrant
+    proc.on("error", () => { grant?.revoke(); evalGrant?.revoke() })
     proc.on("exit", (code, sig) => {
-      grant?.revoke()
+      grant?.revoke(); evalGrant?.revoke()
       if (this.proc !== proc) return // superseded by a restart
       const err = new Error(`pi rpc exited code=${code} sig=${sig} stderr=${this.stderr.slice(-800)}`)
       for (const [, p] of this.pending) p.reject(err)
@@ -132,6 +141,7 @@ export class PiAdapter {
 
   stop() {
     this.generation++
+    this.evalGrant?.revoke(); this.evalGrant = undefined
     this.decisionGrant?.revoke(); this.decisionGrant = undefined
     this.stopReader?.(); this.stopReader = null
     const proc = this.proc
@@ -139,19 +149,19 @@ export class PiAdapter {
     for (const [, p] of this.pending) p.reject(new Error("pi rpc stopped"))
     this.pending.clear()
     if (!proc) return
-    proc.kill("SIGTERM")
-    const killTimer = setTimeout(() => { try { proc.kill("SIGKILL") } catch {} }, 800)
+    proc.stdin?.end()
+    const killTimer = setTimeout(() => { try { proc.kill("SIGKILL") } catch {} }, 3000)
     proc.once("exit", () => clearTimeout(killTimer))
   }
 
   get alive(){ return !!this.proc && this.proc.exitCode===null }
 
-  private sendRaw(cmd: Record<string,unknown>): Promise<RpcResponse>{
+  private sendRaw(cmd: Record<string,unknown>, timeoutMs = 25000): Promise<RpcResponse>{
     if(!this.proc?.stdin) return Promise.reject(new Error("pi rpc not started"))
     const id = `piui_${this.seq++}`
     const payload = { id, ...cmd }
     return new Promise<RpcResponse>((resolve,reject)=>{
-      const timer = setTimeout(()=>{ if(this.pending.has(id)){ this.pending.delete(id); reject(new Error("rpc timeout")) } }, 25000)
+      const timer = setTimeout(()=>{ if(this.pending.has(id)){ this.pending.delete(id); reject(new Error("rpc timeout")) } }, timeoutMs)
       this.pending.set(id, {
         resolve: (v)=>{ clearTimeout(timer); resolve(v) },
         reject: (e)=>{ clearTimeout(timer); reject(e) },
@@ -162,9 +172,10 @@ export class PiAdapter {
   }
 
   // High-level commands mirroring RpcClient
-  async prompt(message:string, images?:unknown){ await this.ensure(); const r = await this.sendRaw({type:"prompt", message, images}); if(!r.success) throw new Error(r.error ?? "prompt failed") }
+  async prompt(message:string, images?:unknown){ await this.ensure(); const r = await this.sendRaw({type:"prompt", message, images, streamingBehavior:"steer"}); if(!r.success) throw new Error(r.error ?? "prompt failed") }
   async steer(message:string, images?:unknown){ await this.ensure(); const r = await this.sendRaw({type:"steer", message, images}); if(!r.success) throw new Error(r.error ?? "steer failed") }
-  async abort(){ await this.ensure(); await this.sendRaw({type:"abort"}) }
+  async clearQueue(){ await this.ensure(); const r = await this.sendRaw({type:"clear_queue"}); if(!r.success) throw new Error(r.error ?? "clear_queue failed"); return r.data as { steering: string[]; followUp: string[] } }
+  async abort(){ await this.ensure(); const r = await this.sendRaw({type:"abort"}, 600000); if(!r.success) throw new Error(r.error ?? "abort failed") }
   async setModel(provider:string, modelId:string){ await this.ensure(); const r = await this.sendRaw({type:"set_model", provider, modelId}); if(!r.success) throw new Error(r.error ?? "set_model failed") }
   async setThinkingLevel(level:string){ await this.ensure(); const r = await this.sendRaw({type:"set_thinking_level", level}); if(!r.success) throw new Error(r.error ?? "set_thinking_level failed") }
   async fork(entryId:string){ await this.ensure(); const r = await this.sendRaw({type:"fork", entryId}); if(!r.success) throw new Error(r.error ?? "fork failed"); return r.data }
@@ -174,7 +185,7 @@ export class PiAdapter {
   async getAvailableModels(){ await this.ensure(); const r = await this.sendRaw({type:"get_available_models"}); if(!r.success) throw new Error(r.error ?? "get_available_models failed"); return r.data as { models?: unknown[] } }
   async getCommands(){ await this.ensure(); const r = await this.sendRaw({type:"get_commands"}); if(!r.success) throw new Error(r.error ?? "get_commands failed"); return r.data as { commands?: unknown[] } }
   async getEntries(since?: string){ await this.ensure(); const r = await this.sendRaw({type:"get_entries", since}); if(!r.success) throw new Error(r.error ?? "get_entries failed"); return r.data }
-  async compact(customInstructions?:string){ await this.ensure(); const r = await this.sendRaw({type:"compact", customInstructions}); if(!r.success) throw new Error(r.error ?? "compact failed"); return r.data }
+  async compact(customInstructions?:string){ await this.ensure(); const r = await this.sendRaw({type:"compact", customInstructions}, 600000); if(!r.success) throw new Error(r.error ?? "compact failed"); return r.data }
   async getTree(){ await this.ensure(); const r = await this.sendRaw({type:"get_tree"}); if(!r.success) throw new Error(r.error ?? "get_tree failed"); return r.data }
   async switchSession(sessionPath:string){ await this.ensure(); const r = await this.sendRaw({type:"switch_session", sessionPath}); if(!r.success) throw new Error(r.error ?? "switch_session failed"); return r.data }
   async newSession(parentSession?:string){ await this.ensure(); const r = await this.sendRaw({type:"new_session", parentSession}); if(!r.success) throw new Error(r.error ?? "new_session failed"); return r.data }

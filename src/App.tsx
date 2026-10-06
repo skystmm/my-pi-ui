@@ -95,6 +95,14 @@ export default function App() {
     return out.reverse()
   }, [entries, leafId])
 
+  useEffect(() => wsClient.on(ev => {
+    if (!("cwd" in ev) || ev.cwd !== curProject?.cwd) return
+    if (ev.t === "queue_restored") { const text = [...ev.steering, ...ev.followUp].join("\n\n"); if (text) setComposerText(current => current ? `${current}\n\n${text}` : text) }
+    if (ev.t === "extension_ui_request" && ev.kind === "set_editor_text") setComposerText(String((ev.data as { text?: string }).text ?? ""))
+    if (ev.t === "extension_ui_request" && ev.kind === "notify") setToast(String((ev.data as { message?: string }).message ?? ""))
+    if (ev.t === "extension_ui_request" && ev.kind === "setTitle") document.title = String((ev.data as { title?: string }).title ?? "pi-ui")
+  }), [curProject?.cwd])
+
   // ---- effects -------------------------------------------------------------
   useEffect(() => {
     if (projects.length && !projects.some(p => p.id === projectId)) setProjectId(projects[0].id)

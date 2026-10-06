@@ -142,8 +142,10 @@ export async function extensionUiResponse(ctx: Ctx, cmd: Extract<ShellCommand, {
 export async function extensionCommand(ctx: Ctx, cmd: Extract<ShellCommand, { t: "extension_command" }>) {
   const adapter = liveSessions.getAdapter(cmd.cwd)
   try {
-    await (adapter as unknown as { sendRaw: (c: Record<string, unknown>) => Promise<unknown> })
-      .sendRaw({ type: "extension_command", extensionId: cmd.extensionId, command: cmd.command, args: cmd.args })
+    if (!/^[^\s/]+$/.test(cmd.command)) throw new Error("invalid extension command")
+    const commands = await adapter.getCommands()
+    if (!commands.commands?.some(c => (c as { name?: string; source?: string }).name === cmd.command && (c as { source?: string }).source === "extension")) throw new Error("unknown extension command")
+    await adapter.prompt(`/${cmd.command}${cmd.args === undefined ? "" : ` ${typeof cmd.args === "string" ? cmd.args : JSON.stringify(cmd.args)}`}`)
   } catch (e) {
     ctx.fail("extension_command_failed", (e as Error)?.message ?? "extension command failed")
   }

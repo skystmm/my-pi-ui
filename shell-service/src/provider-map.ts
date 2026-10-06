@@ -6,6 +6,7 @@
 // agree with models.json / auth.json keys or pi will never resolve the provider.
 
 export type ProviderType =
+  | "azure"
   | "anthropic"
   | "openai"
   | "google"
@@ -15,9 +16,10 @@ export type ProviderType =
   | "ollama"
   | "custom"
 
-export type PiApi = "openai-completions" | "openai-responses" | "anthropic-messages" | "google-generative-ai"
+export type PiApi = string
 
 export const API_BY_TYPE: Record<ProviderType, PiApi> = {
+  azure: "azure-openai-responses",
   anthropic: "anthropic-messages",
   openai: "openai-completions",
   google: "google-generative-ai",
@@ -29,6 +31,7 @@ export const API_BY_TYPE: Record<ProviderType, PiApi> = {
 }
 
 const BUILTIN_ID_BY_TYPE: Partial<Record<ProviderType, string>> = {
+  azure: "azure",
   anthropic: "anthropic",
   openai: "openai",
   google: "google",
@@ -37,6 +40,7 @@ const BUILTIN_ID_BY_TYPE: Partial<Record<ProviderType, string>> = {
 }
 
 const TYPE_BY_BUILTIN_ID: Record<string, ProviderType> = {
+  azure: "azure",
   anthropic: "anthropic",
   openai: "openai",
   google: "google",

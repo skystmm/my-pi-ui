@@ -1,0 +1,587 @@
+{
+  "run": {
+    "id": "e446ced1-fc55-4417-abb8-49ca08292be6",
+    "suiteId": "smoke-v1",
+    "suiteHash": "49cf75d0c6a9156d9f5b034df7a4111058a77d924aadacba736e202beab4d5e7",
+    "metricVersion": "s1-metrics-v1",
+    "adapterVersion": "systemone-v1",
+    "startedAt": "2026-10-06T07:46:29.822Z",
+    "status": "completed",
+    "total": 12,
+    "completed": 12,
+    "errors": 0,
+    "skipped": 0,
+    "repeats": 1,
+    "promotionEligible": false,
+    "models": [
+      {
+        "id": "laya-en",
+        "name": "Laya English",
+        "providerId": "laya",
+        "protocol": "systemone-http",
+        "remoteModel": "english",
+        "revision": 1,
+        "confidenceSemantics": "normalized-entropy",
+        "endpointOrigin": "http://127.0.0.1:8000"
+      },
+      {
+        "id": "laya-multi",
+        "name": "Laya Multilingual",
+        "providerId": "laya",
+        "protocol": "systemone-http",
+        "remoteModel": "multilingual",
+        "revision": 1,
+        "confidenceSemantics": "normalized-entropy",
+        "endpointOrigin": "http://127.0.0.1:8000"
+      }
+    ],
+    "finishedAt": "2026-10-06T07:46:30.472Z"
+  },
+  "metrics": [
+    {
+      "modelId": "laya-en",
+      "type": "choice",
+      "group": "all",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.04394602000000001,
+      "confusion": {
+        "review": {
+          "review": 2,
+          "build": 0
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.13510000000000005,
+      "macroF1": 0.5,
+      "attemptedAccuracy": 1,
+      "p50Ms": 30.348208000184968,
+      "p95Ms": 264.18129199999385,
+      "firstCallMs": 264.18129199999385,
+      "warmP50Ms": 30.348208000184968
+    },
+    {
+      "modelId": "laya-en",
+      "type": "choice",
+      "group": "language:en",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.07691042000000001,
+      "confusion": {
+        "review": {
+          "review": 1,
+          "build": 0
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.19610000000000005,
+      "macroF1": 0.5,
+      "attemptedAccuracy": 1,
+      "p50Ms": 264.18129199999385,
+      "p95Ms": 264.18129199999385,
+      "firstCallMs": 264.18129199999385
+    },
+    {
+      "modelId": "laya-en",
+      "type": "choice",
+      "group": "language:zh",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.010981620000000008,
+      "confusion": {
+        "review": {
+          "review": 1,
+          "build": 0
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.07410000000000005,
+      "macroF1": 0.5,
+      "attemptedAccuracy": 1,
+      "p50Ms": 30.348208000184968,
+      "p95Ms": 30.348208000184968,
+      "warmP50Ms": 30.348208000184968
+    },
+    {
+      "modelId": "laya-en",
+      "type": "choice",
+      "group": "tag:intent",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.04394602000000001,
+      "confusion": {
+        "review": {
+          "review": 2,
+          "build": 0
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.13510000000000005,
+      "macroF1": 0.5,
+      "attemptedAccuracy": 1,
+      "p50Ms": 30.348208000184968,
+      "p95Ms": 264.18129199999385,
+      "firstCallMs": 264.18129199999385,
+      "warmP50Ms": 30.348208000184968
+    },
+    {
+      "modelId": "laya-en",
+      "type": "noul",
+      "group": "all",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.0038502499999999995,
+      "confusion": {
+        "false": {
+          "false": 1,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 1
+        }
+      },
+      "ece": 0.062000000000000055,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "attemptedAccuracy": 1,
+      "p50Ms": 30.568167000077665,
+      "p95Ms": 43.91258300002664,
+      "warmP50Ms": 30.568167000077665
+    },
+    {
+      "modelId": "laya-en",
+      "type": "noul",
+      "group": "language:en",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.00416025,
+      "confusion": {
+        "false": {
+          "false": 1,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 0
+        }
+      },
+      "ece": 0.0645,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "attemptedAccuracy": 1,
+      "p50Ms": 30.568167000077665,
+      "p95Ms": 30.568167000077665,
+      "warmP50Ms": 30.568167000077665
+    },
+    {
+      "modelId": "laya-en",
+      "type": "noul",
+      "group": "language:zh",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.0035402499999999996,
+      "confusion": {
+        "false": {
+          "false": 0,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 1
+        }
+      },
+      "ece": 0.0595,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "attemptedAccuracy": 1,
+      "p50Ms": 43.91258300002664,
+      "p95Ms": 43.91258300002664,
+      "warmP50Ms": 43.91258300002664
+    },
+    {
+      "modelId": "laya-en",
+      "type": "noul",
+      "group": "tag:context",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.0038502499999999995,
+      "confusion": {
+        "false": {
+          "false": 1,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 1
+        }
+      },
+      "ece": 0.062000000000000055,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "attemptedAccuracy": 1,
+      "p50Ms": 30.568167000077665,
+      "p95Ms": 43.91258300002664,
+      "warmP50Ms": 30.568167000077665
+    },
+    {
+      "modelId": "laya-en",
+      "type": "score",
+      "group": "all",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "mae": 0.47655,
+      "toleranceAccuracy": 0,
+      "p50Ms": 27.47379199997522,
+      "p95Ms": 33.236958999885246,
+      "warmP50Ms": 27.47379199997522
+    },
+    {
+      "modelId": "laya-en",
+      "type": "score",
+      "group": "language:en",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "mae": 0.20229999999999992,
+      "toleranceAccuracy": 0,
+      "p50Ms": 27.47379199997522,
+      "p95Ms": 27.47379199997522,
+      "warmP50Ms": 27.47379199997522
+    },
+    {
+      "modelId": "laya-en",
+      "type": "score",
+      "group": "language:zh",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "mae": 0.7508,
+      "toleranceAccuracy": 0,
+      "p50Ms": 33.236958999885246,
+      "p95Ms": 33.236958999885246,
+      "warmP50Ms": 33.236958999885246
+    },
+    {
+      "modelId": "laya-en",
+      "type": "score",
+      "group": "tag:relevance",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "mae": 0.47655,
+      "toleranceAccuracy": 0,
+      "p50Ms": 27.47379199997522,
+      "p95Ms": 33.236958999885246,
+      "warmP50Ms": 27.47379199997522
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "choice",
+      "group": "all",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 0.5,
+      "brier": 0.45581364,
+      "confusion": {
+        "review": {
+          "review": 1,
+          "build": 1
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.06390000000000007,
+      "macroF1": 0.3333333333333333,
+      "attemptedAccuracy": 0.5,
+      "p50Ms": 20.307083000196144,
+      "p95Ms": 96.70762500003912,
+      "firstCallMs": 96.70762500003912,
+      "warmP50Ms": 20.307083000196144
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "choice",
+      "group": "language:en",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.33488928,
+      "confusion": {
+        "review": {
+          "review": 1,
+          "build": 0
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.4092,
+      "macroF1": 0.5,
+      "attemptedAccuracy": 1,
+      "p50Ms": 96.70762500003912,
+      "p95Ms": 96.70762500003912,
+      "firstCallMs": 96.70762500003912
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "choice",
+      "group": "language:zh",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 0,
+      "brier": 0.576738,
+      "confusion": {
+        "review": {
+          "review": 0,
+          "build": 1
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.537,
+      "macroF1": 0,
+      "attemptedAccuracy": 0,
+      "p50Ms": 20.307083000196144,
+      "p95Ms": 20.307083000196144,
+      "warmP50Ms": 20.307083000196144
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "choice",
+      "group": "tag:intent",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 0.5,
+      "brier": 0.45581364,
+      "confusion": {
+        "review": {
+          "review": 1,
+          "build": 1
+        },
+        "build": {
+          "review": 0,
+          "build": 0
+        }
+      },
+      "ece": 0.06390000000000007,
+      "macroF1": 0.3333333333333333,
+      "attemptedAccuracy": 0.5,
+      "p50Ms": 20.307083000196144,
+      "p95Ms": 96.70762500003912,
+      "firstCallMs": 96.70762500003912,
+      "warmP50Ms": 20.307083000196144
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "noul",
+      "group": "all",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.025262180000000013,
+      "confusion": {
+        "false": {
+          "false": 1,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 1
+        }
+      },
+      "ece": 0.11870000000000003,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "attemptedAccuracy": 1,
+      "p50Ms": 20.442916000029072,
+      "p95Ms": 21.480791999958456,
+      "warmP50Ms": 20.442916000029072
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "noul",
+      "group": "language:en",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.000169,
+      "confusion": {
+        "false": {
+          "false": 1,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 0
+        }
+      },
+      "ece": 0.013000000000000012,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "attemptedAccuracy": 1,
+      "p50Ms": 20.442916000029072,
+      "p95Ms": 20.442916000029072,
+      "warmP50Ms": 20.442916000029072
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "noul",
+      "group": "language:zh",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.05035536000000002,
+      "confusion": {
+        "false": {
+          "false": 0,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 1
+        }
+      },
+      "ece": 0.22440000000000004,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "attemptedAccuracy": 1,
+      "p50Ms": 21.480791999958456,
+      "p95Ms": 21.480791999958456,
+      "warmP50Ms": 21.480791999958456
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "noul",
+      "group": "tag:context",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "accuracy": 1,
+      "brier": 0.025262180000000013,
+      "confusion": {
+        "false": {
+          "false": 1,
+          "true": 0
+        },
+        "true": {
+          "false": 0,
+          "true": 1
+        }
+      },
+      "ece": 0.11870000000000003,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "attemptedAccuracy": 1,
+      "p50Ms": 20.442916000029072,
+      "p95Ms": 21.480791999958456,
+      "warmP50Ms": 20.442916000029072
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "score",
+      "group": "all",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "mae": 0.54855,
+      "toleranceAccuracy": 0,
+      "p50Ms": 19.89825000008568,
+      "p95Ms": 21.64354100008495,
+      "warmP50Ms": 19.89825000008568
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "score",
+      "group": "language:en",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "mae": 0.2844,
+      "toleranceAccuracy": 0,
+      "p50Ms": 21.64354100008495,
+      "p95Ms": 21.64354100008495,
+      "warmP50Ms": 21.64354100008495
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "score",
+      "group": "language:zh",
+      "valid": 1,
+      "attempted": 1,
+      "unsupported": 0,
+      "mae": 0.8127,
+      "toleranceAccuracy": 0,
+      "p50Ms": 19.89825000008568,
+      "p95Ms": 19.89825000008568,
+      "warmP50Ms": 19.89825000008568
+    },
+    {
+      "modelId": "laya-multi",
+      "type": "score",
+      "group": "tag:relevance",
+      "valid": 2,
+      "attempted": 2,
+      "unsupported": 0,
+      "mae": 0.54855,
+      "toleranceAccuracy": 0,
+      "p50Ms": 19.89825000008568,
+      "p95Ms": 21.64354100008495,
+      "warmP50Ms": 19.89825000008568
+    }
+  ],
+  "errors": {},
+  "workflow": {
+    "status": "not_run"
+  },
+  "markdown": "# System One evaluation e446ced1-fc55-4417-abb8-49ca08292be6\n\nStatus: completed · suite: smoke-v1\n\nSmoke tests verify integration only; they do not establish model quality or token savings.\n\nCompleted: 12/12; errors: 0; unsupported: 0.\n\n| Model | Type | Group | Valid/attempted | Accuracy | Attempted accuracy | Brier | ECE | MAE | p50/p95 ms |\n|---|---|---|---|---|---|---|---|---|---|\n| laya-en | choice | all | 2/2 | 1.0000 | 1.0000 | 0.0439 | 0.1351 | N/A | 30.3482/264.1813 |\n| laya-en | choice | language:en | 1/1 | 1.0000 | 1.0000 | 0.0769 | 0.1961 | N/A | 264.1813/264.1813 |\n| laya-en | choice | language:zh | 1/1 | 1.0000 | 1.0000 | 0.0110 | 0.0741 | N/A | 30.3482/30.3482 |\n| laya-en | choice | tag:intent | 2/2 | 1.0000 | 1.0000 | 0.0439 | 0.1351 | N/A | 30.3482/264.1813 |\n| laya-en | noul | all | 2/2 | 1.0000 | 1.0000 | 0.0039 | 0.0620 | N/A | 30.5682/43.9126 |\n| laya-en | noul | language:en | 1/1 | 1.0000 | 1.0000 | 0.0042 | 0.0645 | N/A | 30.5682/30.5682 |\n| laya-en | noul | language:zh | 1/1 | 1.0000 | 1.0000 | 0.0035 | 0.0595 | N/A | 43.9126/43.9126 |\n| laya-en | noul | tag:context | 2/2 | 1.0000 | 1.0000 | 0.0039 | 0.0620 | N/A | 30.5682/43.9126 |\n| laya-en | score | all | 2/2 | N/A | N/A | N/A | N/A | 0.4765 | 27.4738/33.2370 |\n| laya-en | score | language:en | 1/1 | N/A | N/A | N/A | N/A | 0.2023 | 27.4738/27.4738 |\n| laya-en | score | language:zh | 1/1 | N/A | N/A | N/A | N/A | 0.7508 | 33.2370/33.2370 |\n| laya-en | score | tag:relevance | 2/2 | N/A | N/A | N/A | N/A | 0.4765 | 27.4738/33.2370 |\n| laya-multi | choice | all | 2/2 | 0.5000 | 0.5000 | 0.4558 | 0.0639 | N/A | 20.3071/96.7076 |\n| laya-multi | choice | language:en | 1/1 | 1.0000 | 1.0000 | 0.3349 | 0.4092 | N/A | 96.7076/96.7076 |\n| laya-multi | choice | language:zh | 1/1 | 0.0000 | 0.0000 | 0.5767 | 0.5370 | N/A | 20.3071/20.3071 |\n| laya-multi | choice | tag:intent | 2/2 | 0.5000 | 0.5000 | 0.4558 | 0.0639 | N/A | 20.3071/96.7076 |\n| laya-multi | noul | all | 2/2 | 1.0000 | 1.0000 | 0.0253 | 0.1187 | N/A | 20.4429/21.4808 |\n| laya-multi | noul | language:en | 1/1 | 1.0000 | 1.0000 | 0.0002 | 0.0130 | N/A | 20.4429/20.4429 |\n| laya-multi | noul | language:zh | 1/1 | 1.0000 | 1.0000 | 0.0504 | 0.2244 | N/A | 21.4808/21.4808 |\n| laya-multi | noul | tag:context | 2/2 | 1.0000 | 1.0000 | 0.0253 | 0.1187 | N/A | 20.4429/21.4808 |\n| laya-multi | score | all | 2/2 | N/A | N/A | N/A | N/A | 0.5485 | 19.8983/21.6435 |\n| laya-multi | score | language:en | 1/1 | N/A | N/A | N/A | N/A | 0.2844 | 21.6435/21.6435 |\n| laya-multi | score | language:zh | 1/1 | N/A | N/A | N/A | N/A | 0.8127 | 19.8983/19.8983 |\n| laya-multi | score | tag:relevance | 2/2 | N/A | N/A | N/A | N/A | 0.5485 | 19.8983/21.6435 |\n\nMetrics: s1-metrics-v1; suite SHA256: 49cf75d0c6a9156d9f5b034df7a4111058a77d924aadacba736e202beab4d5e7.\n\nWorkflow token savings: not_run. Confidence uses probabilities, not vendor confidence. No retries.\n"
+}

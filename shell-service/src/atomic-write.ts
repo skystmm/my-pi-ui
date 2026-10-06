@@ -8,11 +8,17 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, unlinkSync } from "node:fs"
 import { dirname } from "node:path"
 
+/** Pi 1.0.4 configuration permits line comments and trailing commas. */
+export function parsePiJson(raw: string): unknown {
+  const text = raw.replace(/^\uFEFF/, "").replace(/"(?:\\.|[^"\\])*"|\/\/[^\n]*/g, m => m[0] === '"' ? m : "").replace(/"(?:\\.|[^"\\])*"|,(\s*[}\]])/g, (m, tail) => tail ?? (m[0] === '"' ? m : ""))
+  return JSON.parse(text)
+}
+
 export function readJsonFile<T>(path: string): T | null {
   if (!existsSync(path)) return null
   try {
     const raw = readFileSync(path, "utf-8").replace(/^﻿/, "")
-    const j = JSON.parse(raw)
+    const j = parsePiJson(raw)
     return j && typeof j === "object" ? (j as T) : null
   } catch { return null }
 }
@@ -69,7 +75,8 @@ export async function mutateJsonFile<T extends object>(
 ): Promise<T> {
   const seedText = `${JSON.stringify(seed, null, 2)}\n`
   return withFileLock(path, () => {
-    const cur = readJsonFile<T>(path) ?? (seed as T)
+    const cur = readJsonFile<T>(path)
+    if (!cur) throw new Error("invalid_json_config")
     const next = fn(cur)
     writeJsonAtomic(path, next)
     return next

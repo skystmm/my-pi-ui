@@ -10,7 +10,9 @@ export default function systemOne(pi: { registerTool: (tool: any) => void }) {
       const response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(params), signal })
       const data = await response.json() as { code?: string }
       if (!response.ok) throw new Error(`System One: ${data.code ?? 'unavailable'}`)
-      return { content: [{ type: 'text', text: JSON.stringify(data) }], details: data }
+      const usage = (data as any).usage
+      const billed = usage && ['input', 'output', 'cacheRead', 'cacheWrite', 'totalTokens'].every(k => typeof usage[k] === 'number' && Number.isFinite(usage[k])) && usage.cost && ['input', 'output', 'cacheRead', 'cacheWrite', 'total'].every(k => typeof usage.cost[k] === 'number' && Number.isFinite(usage.cost[k])) ? usage : undefined
+      return { usage: billed, content: [{ type: 'text', text: JSON.stringify(data) }], details: data }
     },
   })
 }

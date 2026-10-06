@@ -120,8 +120,8 @@ function handleEvent(ev: ShellEvent) {
       if (kind === "select" || kind === "confirm" || kind === "input" || kind === "editor") {
         state.pendingExtensionUI = { cwd: ev.cwd, requestId: ev.requestId, kind, data: ev.data, extensionId: (ev as { extensionId?: string }).extensionId }
       } else if (kind === "notify") {
-        const d = ev.data as { message?: string } | undefined
-        state.lastError = { code: "notify", message: String(d?.message ?? ev.data) }
+        const d = ev.data as { message?: string; notifyType?: string } | undefined
+        if (d?.notifyType === "error") state.lastError = { code: "notify", message: String(d.message ?? ev.data) }
       } else if (kind === "setStatus") {
         const d = ev.data as { statusKey?: string; statusText?: string }
         if (d?.statusKey) {

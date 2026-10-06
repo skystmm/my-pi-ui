@@ -2,7 +2,7 @@ import { DecisionResult, asDecisionResult } from '../model-config/DecisionResult
 import { useState } from "react"
 import {
   entryLabel, messageText, thinkingText, toolCallsOf,
-  type SessionEntry, type AgentMessage, type ToolCall,
+  type SessionEntry, type AgentMessage, type ToolCall, type ImageContent,
 } from "../../lib/session-entry-schema"
 
 /** JSON preview that can never throw — entries come from disk, not from us. */
@@ -11,6 +11,11 @@ function safeJson(v: unknown, max = 800): string {
     const s = JSON.stringify(v, null, 2)
     return (s ?? String(v)).slice(0, max)
   } catch { return "[unserializable]" }
+}
+
+function ImageGallery({ content }: { content: unknown }) {
+  const images = Array.isArray(content) ? content.filter((b): b is ImageContent => b?.type === "image" && /^(image\/(png|jpeg|webp|gif))$/.test(b.mimeType) && typeof b.data === "string") : []
+  return images.length ? <div className="flex flex-wrap gap-2 mt-2">{images.map((b, i) => <img key={i} loading="lazy" className="max-w-full max-h-[420px] rounded border border-[var(--border)]" src={`data:${b.mimeType};base64,${b.data}`} alt={`图片 ${i + 1}`}/>)}</div> : null
 }
 
 function MetaRow({ entry }: { entry: SessionEntry }) {
@@ -99,7 +104,9 @@ function ToolResultCard({ message }: { message: AgentMessage & { role: "toolResu
         <span className="mono text-[10px] text-zinc-600 truncate hidden sm:inline">{text.slice(0, 60)}</span>
         <span className="ml-auto mono text-[11px] text-zinc-600">{open ? "▴" : "▾"}</span>
       </button>
+      {message.usage && <div className="px-3 pb-2 mono text-[10px] text-zinc-500">工具用量 · {message.usage.input} in · {message.usage.output} out · ${message.usage.cost?.total.toFixed(6) ?? "—"}</div>}
       {open && decision && <div className="px-3 pb-2"><DecisionResult result={decision}/></div>}
+      {open && <div className="px-3 pb-2"><ImageGallery content={message.content}/></div>}
       {open && !decision && <pre className="px-3 pb-2 mono text-[11px] whitespace-pre-wrap break-all" style={{ color: message.isError ? "#fca5a5" : "#a3a3a3" }}>{text.slice(0, 4000)}</pre>}
     </div>
   )
@@ -132,7 +139,7 @@ export function EntryView({ entry }: { entry: SessionEntry }) {
         <div className="flex justify-end">
           <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[14px] leading-relaxed" style={{ background: "var(--bg-muted)", border: "1px solid var(--border)" }}>
             {text || <span className="mono text-[12px] text-zinc-500">[空消息]</span>}
-            {images > 0 && <div className="mono text-[10px] text-zinc-500 mt-1.5">+{images} 张图片</div>}
+            {images > 0 && <ImageGallery content={m.content}/>}
           </div>
         </div>
       )
@@ -173,6 +180,8 @@ export function EntryView({ entry }: { entry: SessionEntry }) {
     return <MetaRow entry={entry} />
   }
 
+  if (entry.type === "context_edit") return <details className="rounded-lg border p-3 mono text-xs border-[var(--border)]"><summary>{entry.replacement === null ? "从模型上下文移除" : "替换模型上下文"} · {entry.targetId}</summary><p className="mt-2 text-zinc-400">原始历史保留；此变更仅影响后续模型输入。</p>{entry.replacement !== null && <pre className="whitespace-pre-wrap break-all mt-2">{safeJson(entry.replacement.content, 4000)}</pre>}</details>
+  if (entry.type === "usage") return <div className="rounded-lg border p-3 mono text-xs border-[var(--border)]">{entryLabel(entry)}<div className="mt-1 text-zinc-400">{entry.usage.input} in · {entry.usage.output} out · cache {entry.usage.cacheRead + entry.usage.cacheWrite} · ${entry.usage.cost?.total.toFixed(6) ?? "—"}</div>{entry.note && <p>{entry.note}</p>}</div>
   if (entry.type === "compaction") return <SummaryCard entry={entry} tone="amber" />
   if (entry.type === "branch_summary") return <SummaryCard entry={entry} tone="violet" />
   if (entry.type === "custom" || entry.type === "custom_message") {

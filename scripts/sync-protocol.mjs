@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url"
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 
 const PAIRS = [
+  ["shell-service/src/system-one/eval/types.ts", "src/lib/system-one/eval/types.ts"],
   ["shell-service/src/system-one/types.ts", "src/lib/system-one/types.ts"],
   ["shell-service/src/session-entry-schema.ts", "src/lib/session-entry-schema.ts"],
   ["shell-service/src/provider-map.ts", "src/lib/provider-map.ts"],
@@ -25,7 +26,7 @@ const BANNER = `// GENERATED — do not edit. Source: shell-service/{file}
 
 function render(sourceRel) {
   const src = readFileSync(join(root, sourceRel), "utf-8")
-  const body = src.replace(/(from\s+")(\.\/[^"]+)\.js(")/g, "$1$2$3")
+  const body = src.replace(/(from\s+["'])(\.{1,2}\/[^"']+)\.js(["'])/g, "$1$2$3")
   return BANNER.replace("{file}", sourceRel.replace(/^shell-service\/src\//, "")) + body
 }
 

@@ -17,13 +17,14 @@ export function validateRequest(config: Resolved, request: DecisionRequest) {
     if (q.type === 'score' && (!Array.isArray(q.criteria) || q.criteria.length < 2 || q.criteria.length > 10 || q.criteria.some(v => typeof v !== 'string'))) fail('invalid_request')
   }
 }
-export function validateAnswers(request: DecisionRequest, data: unknown): Record<string, Record<string, unknown>> {
+export function validateAnswers(request: DecisionRequest, data: unknown, nativeScore = false): Record<string, Record<string, unknown>> {
   if (!object(data) || typeof data.model !== 'string' || !object(data.answers)) fail('invalid_response')
   const answers = data.answers
   if (Object.keys(answers).length !== Object.keys(request.questions).length) fail('invalid_response')
   for (const [id, q] of Object.entries(request.questions)) {
     const a = answers[id]; if (!object(a) || a.type !== q.type) fail('invalid_response')
     if (q.type === 'noul') { if (!probability(a.noul)) fail('invalid_response'); continue }
+    if (q.type === 'score' && nativeScore && a.probabilities === undefined) { if (typeof a.score !== 'number' || !Number.isFinite(a.score) || a.score < 0 || a.score > (q.criteria as string[]).length - 1 || !probability(a.confidence)) fail('invalid_response'); continue }
     const options = q.type === 'choice' ? Object.keys(q.criteria!) : (q.criteria as string[]).map((_, i) => String(i))
     if (!object(a.probabilities) || Object.keys(a.probabilities).length !== options.length || options.some(k => !probability(a.probabilities[k]))) fail('invalid_response')
     const sum = options.reduce((n, k) => n + a.probabilities[k], 0); if (Math.abs(sum - 1) > 0.01 || !probability(a.confidence)) fail('invalid_response')
@@ -34,6 +35,7 @@ export function validateAnswers(request: DecisionRequest, data: unknown): Record
 }
 export async function evaluateDecision(config: Resolved, request: DecisionRequest, signal?: AbortSignal, fetcher: typeof fetch = fetch): Promise<Result> {
   validateRequest(config, request)
+  if (config.provider.protocol === 'pi-native') { const { nativeDecisionClient } = await import('./native.js'); return nativeDecisionClient.evaluate(config, request, signal) }
   const start = Date.now(); const deadline = AbortSignal.timeout(config.provider.timeoutMs); const combined = signal ? AbortSignal.any([signal, deadline]) : deadline
   try {
     const response = await fetcher(config.provider.endpoint, { method: 'POST', redirect: 'error', signal: combined, headers: { 'Content-Type': 'application/json', ...(config.key ? { Authorization: `Bearer ${config.key}` } : {}) }, body: JSON.stringify({ ...request, ...(config.model.remoteModel ? { model: config.model.remoteModel } : {}) }) })
@@ -44,6 +46,6 @@ export async function evaluateDecision(config: Resolved, request: DecisionReques
     let data: any; try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')) } catch { fail('invalid_response') }
     const answers = validateAnswers(request, data)
     if (combined.aborted) fail(signal?.aborted ? 'cancelled' : 'timeout')
-    return { actualModel: data.model, providerId: config.provider.id, modelConfigId: config.model.id, revision: config.revision, latencyMs: Date.now() - start, answers, usage: data.usage ?? null, confidenceSemantics: config.model.confidenceSemantics }
+    return { actualModel: data.model, providerId: config.provider.id, modelConfigId: config.model.id, revision: config.revision, latencyMs: Date.now() - start, answers, usage: data.usage ?? null, routing: data.routing, confidenceSemantics: config.model.confidenceSemantics }
   } catch (e) { if (signal?.aborted) fail('cancelled'); if (deadline.aborted) fail('timeout'); if (e instanceof DecisionError) throw e; fail('upstream_error') }
 }

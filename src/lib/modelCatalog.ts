@@ -13,6 +13,7 @@ export type ProviderPreset = {
 }
 
 export const providerPresets: ProviderPreset[] = [
+  { type: "azure", label: "Azure OpenAI", hint: "Azure endpoint /openai/v1", defaultModels: [], docsUrl: "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/providers.md#azure-openai" },
   { type: "anthropic", label: "Anthropic", hint: "claude-*.api.anthropic.com", baseUrl: "https://api.anthropic.com", defaultModels: [], docsUrl: "https://docs.anthropic.com" },
   { type: "openai", label: "OpenAI", hint: "api.openai.com", baseUrl: "https://api.openai.com/v1", defaultModels: [], docsUrl: "https://platform.openai.com" },
   { type: "google", label: "Google AI", hint: "generativelanguage.googleapis.com", baseUrl: "https://generativelanguage.googleapis.com/v1beta", defaultModels: [], docsUrl: "https://ai.google.dev" },

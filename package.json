@@ -23,9 +23,13 @@
     "build:shell": "npm run build --prefix shell-service",
     "check": "node scripts/sync-protocol.mjs --check && tsc -b && npm run build --prefix shell-service && npm test --prefix shell-service",
     "clean": "rm -rf dist shell-service/dist node_modules/.tmp",
-    "preview": "vite preview --port 4173"
+    "preview": "vite preview --port 4173",
+    "test:pi-compat": "npm run build:shell && node scripts/validate-pi-104.mjs"
   },
   "dependencies": {
+    "@earendil-works/pi-ai": "1.0.4",
+    "@earendil-works/pi-coding-agent": "1.0.4",
+    "proper-lockfile": "^4.1.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -38,5 +42,10 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.0",
     "vite": "^6.3.0"
+  },
+  "pi": {
+    "extensions": [
+      "./shell-service/dist/system-one/eval/pi-extension.js"
+    ]
   }
 }

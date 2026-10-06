@@ -43,6 +43,8 @@ export interface ToolResultMessage {
   toolName: string
   content: (TextContent | ImageContent)[]
   details?: unknown
+  usage?: Usage
+  nestedCalls?: { calls: { id: string; name: string; arguments?: Record<string, unknown>; argumentsBytes?: number; status: "ok" | "error" | "unfinished"; durationMs?: number; error?: string }[]; complete: boolean }
   isError: boolean
   timestamp: number
 }
@@ -86,6 +88,7 @@ export interface ModelChangeEntry extends SessionEntryBase { type: "model_change
 export interface CompactionEntry extends SessionEntryBase {
   type: "compaction"; summary: string; firstKeptEntryId: string; tokensBefore: number
   details?: unknown; usage?: Usage; fromHook?: boolean
+  systemMessage?: { role: "system"; content: unknown }
 }
 export interface BranchSummaryEntry extends SessionEntryBase {
   type: "branch_summary"; fromId: string; summary: string; details?: unknown; usage?: Usage; fromHook?: boolean
@@ -98,10 +101,13 @@ export interface CustomMessageEntry extends SessionEntryBase {
 export interface LabelEntry extends SessionEntryBase { type: "label"; targetId: string; label: string | undefined }
 export interface SessionInfoEntry extends SessionEntryBase { type: "session_info"; name?: string }
 
+export interface ContextEditEntry extends SessionEntryBase { type: "context_edit"; targetId: string; replacement: { content: UserMessage["content"] | AssistantMessage["content"] | ToolResultMessage["content"] | CustomMessage["content"] } | null }
+export interface UsageEntry extends SessionEntryBase { type: "usage"; kind: string; provider: string; model: string; usage: Usage; note?: string }
+
 export type SessionEntry =
   | SessionMessageEntry | ThinkingLevelChangeEntry | ModelChangeEntry
   | CompactionEntry | BranchSummaryEntry | CustomEntry | CustomMessageEntry
-  | LabelEntry | SessionInfoEntry
+  | LabelEntry | SessionInfoEntry | ContextEditEntry | UsageEntry
 
 export type FileEntry = SessionHeader | SessionEntry
 
@@ -176,6 +182,8 @@ export function entryLabel(e: SessionEntry): string {
     case "branch_summary": return "branch summary"
     case "model_change": return `model → ${e.provider}/${e.modelId}`
     case "thinking_level_change": return `thinking → ${e.thinkingLevel}`
+    case "context_edit": return `context · ${e.replacement === null ? "omit" : "replace"} ${e.targetId}`
+    case "usage": return `usage · ${e.kind} · ${e.provider}/${e.model}`
     case "session_info": return e.name ? `title → ${e.name}` : "title cleared"
     case "label": return e.label ? `label · ${e.label}` : "label cleared"
     case "custom": return `custom · ${e.customType}`

@@ -7,7 +7,7 @@ export function ExtensionUIOverlay() {
   const [value, setValue] = useState("")
   const [countdown, setCountdown] = useState<number | null>(null)
 
-  useEffect(() => { setValue(""); setCountdown(null) }, [pending?.requestId])
+  useEffect(() => { setValue(pending?.kind === "editor" ? String((pending.data as Record<string, unknown>)?.prefill ?? "") : ""); setCountdown(null) }, [pending?.requestId])
 
   useEffect(() => {
     if (!pending) return
@@ -80,7 +80,7 @@ export function ExtensionUIOverlay() {
           )}
           {pending.kind === "editor" && (
             <div className="space-y-3">
-              <textarea value={value} onChange={e=>setValue(e.target.value)} placeholder={String(data?.["prefill"] ?? "")} rows={8} autoFocus className="w-full px-3 py-2 rounded-lg border bg-[var(--bg)] text-[13px] font-mono focus:outline-none resize-none" style={{ borderColor:"var(--border)" }} />
+              <textarea value={value} onChange={e=>setValue(e.target.value)}  rows={8} autoFocus className="w-full px-3 py-2 rounded-lg border bg-[var(--bg)] text-[13px] font-mono focus:outline-none resize-none" style={{ borderColor:"var(--border)" }} />
               <div className="flex gap-2 justify-end">
                 <button onClick={sendCancel} className="px-4 py-1.5 rounded-lg border text-[13px]" style={{ borderColor:"var(--border)", background:"var(--bg)" }}>取消</button>
                 <button onClick={()=>sendValue(value)} className="px-4 py-1.5 rounded-lg text-[13px] font-medium" style={{ background:"#ededed", color:"#0a0a0a" }}>保存</button>

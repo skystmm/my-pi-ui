@@ -1,11 +1,13 @@
 // GENERATED — do not edit. Source: shell-service/ws-protocol.ts
 // Regenerate with: npm run sync:protocol
-import type { Config as DecisionConfig, Draft as DecisionDraft } from "./system-one/types"
+import type { EvalInput, EvalRun } from "./system-one/eval/types"
+import type { NativeModel, Config as DecisionConfig, Draft as DecisionDraft } from "./system-one/types"
 // Shared ShellEvent / ShellCommand — mirrors docs/architecture §5
 import type { SessionEntry } from "./session-entry-schema"
 
 export type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max"
 export type ProviderType =
+  | "azure"
   | "anthropic"
   | "openai"
   | "google"
@@ -154,6 +156,10 @@ export type StreamDelta =
   | { kind: "error"; message: string }
 
 export type ShellEvent =
+  | { t: "decision_native_models"; models: NativeModel[] }
+  | { t: "queue_restored"; cwd: string; steering: string[]; followUp: string[] }
+  | { t: "eval_progress"; run: EvalRun }
+  | { t: "eval_result"; requestId: string; ok: boolean; code?: string; result?: unknown }
   | { t: "decision_selection"; cwd: string; selection: { scope: string; modelId?: string | null } }
   | { t: "decision_catalog"; config: DecisionConfig }
   | { t: "decision_result"; requestId: string; ok: boolean; code?: string; result?: unknown; config?: DecisionConfig; selection?: { scope: string; modelId?: string | null } }
@@ -174,7 +180,7 @@ export type ShellEvent =
   | { t: "extensions_snapshot"; extensions: ExtensionEntry[] }
   | { t: "skills_snapshot"; skills: SkillEntry[] }
   | { t: "slash_commands"; cwd: string; commands: SlashCommandEntry[] }
-  | { t: "extension_ui_request"; cwd: string; requestId: string; extensionId?: string; kind: "select" | "confirm" | "input" | "notify" | "setStatus" | "setWidget" | "editor"; data: unknown }
+  | { t: "extension_ui_request"; cwd: string; requestId: string; extensionId?: string; kind: "select" | "confirm" | "input" | "notify" | "setStatus" | "setWidget" | "editor" | "setTitle" | "set_editor_text"; data: unknown }
   | { t: "extension_result"; requestId: string; ok: boolean; error?: string }
   | { t: "agent_event"; cwd: string; event: unknown }
   // Live transcript increments, forwarded from pi rpc: one appended SessionEntry,
@@ -193,7 +199,8 @@ export type ShellEvent =
   | { t: "error"; code: string; message: string }
 
 export type ShellCommand =
-  | { t: "decision_command"; action: "list" | "save" | "select" | "test"; requestId: string; cwd?: string; config?: DecisionDraft; modelId?: string | null }
+  | { t: "eval_command"; requestId: string; input: EvalInput }
+  | { t: "decision_command"; action: "list" | "save" | "select" | "test" | "native_models"; requestId: string; cwd?: string; config?: DecisionDraft; modelId?: string | null }
   | { t: "list_projects" }
   | { t: "pick_project_directory" }
   | { t: "browse_directories"; path?: string }

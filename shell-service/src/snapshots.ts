@@ -5,7 +5,7 @@ import { loadSettings } from "./settings-service.js"
 import { listProviders, listModels, type PiAvailableModel } from "./providers.js"
 import type { ExtensionEntry, SkillEntry, ProviderAccount, ModelEntry } from "./ws-protocol.js"
 
-export function providersSnapshot(): ProviderAccount[] { return listProviders() }
+export function providersSnapshot(available: PiAvailableModel[] = []): ProviderAccount[] { return listProviders(available) }
 
 export function modelsSnapshot(available: PiAvailableModel[] = []): ModelEntry[] { return listModels(available) }
 

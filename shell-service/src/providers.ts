@@ -18,7 +18,10 @@ function statusFor(providerId: string, envRef: string | undefined): ProviderAcco
   return envRef ? "missing_key" : "missing_key"
 }
 
-export function listProviders(): ProviderAccount[] {
+export function listProviders(available: PiAvailableModel[] = []): ProviderAccount[] {
+  const usable = new Set(available.map(m => m.provider))
+  const auth = readAuth()
+  const isOAuth = (id: string) => (auth[id] as { type?: string } | undefined)?.type === "oauth"
   const cfg = loadModelsConfig()
   const seen = new Set<string>()
   const out: ProviderAccount[] = []
@@ -32,10 +35,10 @@ export function listProviders(): ProviderAccount[] {
       name: def.name?.trim() || id,
       type: typeForProviderId(id),
       baseUrl: def.baseUrl,
-      apiKeyMasked: maskedKeyFor(id),
-      auth: entry?.key.startsWith("$") ? "env" : "apiKey",
+      apiKeyMasked: isOAuth(id) ? "OAuth（由 Pi 管理）" : maskedKeyFor(id),
+      auth: isOAuth(id) ? "oauth" : entry?.key.startsWith("$") ? "env" : "apiKey",
       envVar: envRef,
-      status: statusFor(id, envRef),
+      status: usable.has(id) || isOAuth(id) ? "connected" : statusFor(id, envRef),
       api: def.api,
       modelIds: (def.models ?? []).map(m => m.id),
     })
@@ -43,17 +46,17 @@ export function listProviders(): ProviderAccount[] {
 
   // Providers that exist only as a credential (a built-in pi catalog provider
   // the user just supplied a key for) still deserve a row in the drawer.
-  for (const id of Object.keys(readAuth())) {
-    if (seen.has(id) || !BUILTIN_PROVIDER_IDS.has(id)) continue
+  for (const id of new Set([...Object.keys(auth), ...usable])) {
+    if (seen.has(id)) continue
     const entry = getApiKeyEntry(id)
-    if (!entry) continue
+    if (!entry && !isOAuth(id) && !usable.has(id)) continue
     out.push({
       id,
       name: id,
       type: typeForProviderId(id),
-      apiKeyMasked: maskedKeyFor(id),
-      auth: entry.key.startsWith("$") ? "env" : "apiKey",
-      envVar: entry.key.startsWith("$") ? entry.key.slice(1) : undefined,
+      apiKeyMasked: isOAuth(id) ? "OAuth（由 Pi 管理）" : maskedKeyFor(id),
+      auth: isOAuth(id) ? "oauth" : entry?.key.startsWith("$") ? "env" : "apiKey",
+      envVar: entry?.key.startsWith("$") ? entry.key.slice(1) : undefined,
       status: "connected",
       modelIds: [],
     })
@@ -118,7 +121,7 @@ function compatLabel(api: PiApi | undefined): string {
     case "anthropic-messages": return "anthropic-messages"
     case "google-generative-ai": return "google-generative-ai"
     case "openai-responses": return "openai-responses"
-    default: return "openai-completions"
+    default: return api ?? "openai-completions"
   }
 }
 

@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-06",
+  "pi": "1.0.4",
+  "scope": "feat_system_one current working tree; isolated real Pi, synthetic local chat endpoint",
+  "checks": [
+    {
+      "name": "models/state/commands",
+      "status": "pass",
+      "detail": {
+        "modelShape": "object"
+      }
+    },
+    {
+      "name": "new_session + set_model + set_thinking",
+      "status": "pass"
+    },
+    {
+      "name": "stream + LF framing + entries + stats + tree",
+      "status": "pass",
+      "detail": {
+        "entries": 6,
+        "events": [
+          "agent_start",
+          "turn_start",
+          "message_start",
+          "message_end",
+          "message_update",
+          "turn_end",
+          "agent_end",
+          "agent_settled"
+        ]
+      }
+    },
+    {
+      "name": "extension dialog round-trip",
+      "status": "pass"
+    },
+    {
+      "name": "hosted s1-eval validate without LLM",
+      "status": "pass"
+    },
+    {
+      "name": "clone + switch_session",
+      "status": "pass"
+    },
+    {
+      "name": "fork + switch_session",
+      "status": "pass"
+    },
+    {
+      "name": "manual compaction",
+      "status": "pass"
+    },
+    {
+      "name": "context_edit preserved and applied by Pi",
+      "status": "pass",
+      "detail": {
+        "entry": {
+          "type": "context_edit",
+          "id": "b56b3dbd",
+          "parentId": "57654d8f",
+          "timestamp": "2026-10-06T08:34:06.221Z",
+          "targetId": "5df379f7",
+          "replacement": null
+        }
+      }
+    },
+    {
+      "name": "stop after queued steer",
+      "status": "pass"
+    },
+    {
+      "name": "UI create_session model metadata",
+      "status": "fail",
+      "error": "new session snapshot loses model object\n+ actual - expected\n\n+ ''\n- 'fixture/fixture-chat'\n"
+    },
+    {
+      "name": "Pi ModelRuntime accepts valid Azure API config",
+      "status": "pass"
+    },
+    {
+      "name": "UI accepts the same valid Azure API config",
+      "status": "fail",
+      "error": "invalid_api"
+    }
+  ],
+  "azure": {
+    "piError": null,
+    "uiError": "invalid_api",
+    "api": "azure-openai-responses",
+    "provider": "azure"
+  },
+  "contextEdit": {
+    "type": "context_edit",
+    "id": "b56b3dbd",
+    "parentId": "57654d8f",
+    "timestamp": "2026-10-06T08:34:06.221Z",
+    "targetId": "5df379f7",
+    "replacement": null
+  },
+  "stop": {
+    "requestsAfterAbort": 1,
+    "agentStarts": 1,
+    "queuedReachedModel": false
+  },
+  "createdSnapshot": {
+    "t": "session_snapshot",
+    "sessionId": "01a11059-45ed-725f-9f20-01e9ccb5e65c",
+    "projectId": "--private-tmp-pi-ui-compat-104-project--",
+    "cwd": "/private/tmp/pi-ui-compat-104/project",
+    "leafId": "",
+    "entries": [],
+    "model": "",
+    "thinkingLevel": "off"
+  },
+  "excludedProbe": "An initial Azure candidate without required baseUrl was invalid in Pi itself; excluded from compatibility evidence."
+}

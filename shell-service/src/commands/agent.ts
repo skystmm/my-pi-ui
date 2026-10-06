@@ -1,7 +1,7 @@
 // Agent commands: everything that drives the live pi session (prompt/steer/abort,
 // model + thinking level, fork/clone/compact, session-tree read).
 import { liveSessions } from "../pi-adapter/index.js"
-import { scanProjects } from "../project-scanner.js"
+import { adoptLiveSession } from "./session.js"
 import { ensureLiveSession } from "../session-router.js"
 import { scheduleStatsPush } from "../stats-push.js"
 import type { Ctx } from "./context.js"
@@ -34,7 +34,7 @@ export async function abort(ctx: Ctx, cmd: Extract<ShellCommand, { t: "abort" }>
   if (!cwd) return
   const adapter = liveSessions.peek(cwd) // nothing to abort before the adapter exists
   if (!adapter) return
-  try { await adapter.abort() } catch (e) { ctx.fail("abort_failed", (e as Error)?.message ?? "abort failed") }
+  try { const queued = await adapter.clearQueue(); await adapter.abort(); ctx.send({ t: "queue_restored", cwd, steering: queued.steering ?? [], followUp: queued.followUp ?? [] }) } catch (e) { ctx.fail("abort_failed", (e as Error)?.message ?? "abort failed") }
 }
 
 export async function setModel(ctx: Ctx, cmd: Extract<ShellCommand, { t: "set_model" }>) {
@@ -72,8 +72,8 @@ export async function fork(ctx: Ctx, cmd: Extract<ShellCommand, { t: "fork" }>) 
   if (!cwd) return
   if (!await ensureLiveSession(ctx.ws, ctx.wss, cwd)) return
   try {
-    await liveSessions.getAdapter(cwd).fork(cmd.fromEntryId)
-    ctx.broadcast({ t: "projects_snapshot", projects: scanProjects() })
+    const result = await liveSessions.getAdapter(cwd).fork(cmd.fromEntryId) as { cancelled?: boolean; text?: string }
+    if (!result?.cancelled) { await adoptLiveSession(ctx, cwd); if (result?.text) ctx.send({ t: "queue_restored", cwd, steering: [result.text], followUp: [] }) }
   } catch (e) {
     ctx.fail("fork_failed", (e as Error)?.message ?? "fork failed")
   }
@@ -84,8 +84,8 @@ export async function clone(ctx: Ctx, cmd: Extract<ShellCommand, { t: "clone" }>
   if (!cwd) return
   if (!await ensureLiveSession(ctx.ws, ctx.wss, cwd)) return
   try {
-    await liveSessions.getAdapter(cwd).clone()
-    ctx.broadcast({ t: "projects_snapshot", projects: scanProjects() })
+    const result = await liveSessions.getAdapter(cwd).clone() as { cancelled?: boolean }
+    if (!result?.cancelled) await adoptLiveSession(ctx, cwd)
   } catch (e) {
     ctx.fail("clone_failed", (e as Error)?.message ?? "clone failed")
   }

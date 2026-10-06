@@ -1,0 +1,1226 @@
+{
+  "at": "2026-10-06T07:51:48.547Z",
+  "piVersion": "0.85.1",
+  "standaloneCompanion": true,
+  "agentStarts": 0,
+  "commandNames": [
+    "s1-eval",
+    "llama",
+    "skill:lark-approval",
+    "skill:lark-apps",
+    "skill:lark-attendance",
+    "skill:lark-base",
+    "skill:lark-calendar",
+    "skill:lark-contact",
+    "skill:lark-doc",
+    "skill:lark-drive",
+    "skill:lark-event",
+    "skill:lark-im",
+    "skill:lark-mail",
+    "skill:lark-markdown",
+    "skill:lark-meeting",
+    "skill:lark-minutes",
+    "skill:lark-note",
+    "skill:lark-okr",
+    "skill:lark-openapi-explorer",
+    "skill:lark-shared",
+    "skill:lark-sheets",
+    "skill:lark-skill-maker",
+    "skill:lark-slides",
+    "skill:lark-task",
+    "skill:lark-vc",
+    "skill:lark-vc-agent",
+    "skill:lark-whiteboard",
+    "skill:lark-wiki",
+    "skill:lark-workflow-meeting-summary",
+    "skill:lark-workflow-standup-report"
+  ],
+  "health": {
+    "status": "ok",
+    "loaded": [
+      "english",
+      "multilingual"
+    ],
+    "revisions": {
+      "english": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+      "multilingual": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+    },
+    "device": "mps",
+    "device_is_preference": false,
+    "checkpoint_devices": {
+      "english": "mps",
+      "multilingual": "mps"
+    },
+    "cpu_fallbacks": {
+      "english": {
+        "count": 0,
+        "last_reason": null
+      },
+      "multilingual": {
+        "count": 0,
+        "last_reason": null
+      }
+    }
+  },
+  "report": {
+    "run": {
+      "id": "ddb2318a-c507-4b6f-88b9-b61112bef06c",
+      "suiteId": "smoke-v1",
+      "suiteHash": "49cf75d0c6a9156d9f5b034df7a4111058a77d924aadacba736e202beab4d5e7",
+      "metricVersion": "s1-metrics-v1",
+      "adapterVersion": "systemone-v1",
+      "startedAt": "2026-10-06T07:51:47.525Z",
+      "status": "completed",
+      "total": 12,
+      "completed": 12,
+      "errors": 0,
+      "skipped": 0,
+      "repeats": 1,
+      "promotionEligible": false,
+      "models": [
+        {
+          "id": "laya-en",
+          "name": "Laya English",
+          "providerId": "laya",
+          "protocol": "systemone-http",
+          "remoteModel": "english",
+          "revision": 1,
+          "confidenceSemantics": "normalized-entropy",
+          "endpointOrigin": "http://127.0.0.1:8000",
+          "timeoutMs": 120000,
+          "questionTypes": [
+            "choice",
+            "score",
+            "noul"
+          ]
+        },
+        {
+          "id": "laya-multi",
+          "name": "Laya Multilingual",
+          "providerId": "laya",
+          "protocol": "systemone-http",
+          "remoteModel": "multilingual",
+          "revision": 1,
+          "confidenceSemantics": "normalized-entropy",
+          "endpointOrigin": "http://127.0.0.1:8000",
+          "timeoutMs": 120000,
+          "questionTypes": [
+            "choice",
+            "score",
+            "noul"
+          ]
+        }
+      ],
+      "finishedAt": "2026-10-06T07:51:48.149Z"
+    },
+    "metrics": [
+      {
+        "modelId": "laya-en",
+        "type": "choice",
+        "group": "all",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.04394602000000001,
+        "confusion": {
+          "review": {
+            "review": 2,
+            "build": 0
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.13510000000000005,
+        "macroF1": 0.5,
+        "attemptedAccuracy": 1,
+        "p50Ms": 33.03308300000003,
+        "p95Ms": 267.45629199999996,
+        "firstCallMs": 267.45629199999996,
+        "warmP50Ms": 33.03308300000003
+      },
+      {
+        "modelId": "laya-en",
+        "type": "choice",
+        "group": "language:en",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.07691042000000001,
+        "confusion": {
+          "review": {
+            "review": 1,
+            "build": 0
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.19610000000000005,
+        "macroF1": 0.5,
+        "attemptedAccuracy": 1,
+        "p50Ms": 267.45629199999996,
+        "p95Ms": 267.45629199999996,
+        "firstCallMs": 267.45629199999996
+      },
+      {
+        "modelId": "laya-en",
+        "type": "choice",
+        "group": "language:zh",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.010981620000000008,
+        "confusion": {
+          "review": {
+            "review": 1,
+            "build": 0
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.07410000000000005,
+        "macroF1": 0.5,
+        "attemptedAccuracy": 1,
+        "p50Ms": 33.03308300000003,
+        "p95Ms": 33.03308300000003,
+        "warmP50Ms": 33.03308300000003
+      },
+      {
+        "modelId": "laya-en",
+        "type": "choice",
+        "group": "tag:intent",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.04394602000000001,
+        "confusion": {
+          "review": {
+            "review": 2,
+            "build": 0
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.13510000000000005,
+        "macroF1": 0.5,
+        "attemptedAccuracy": 1,
+        "p50Ms": 33.03308300000003,
+        "p95Ms": 267.45629199999996,
+        "firstCallMs": 267.45629199999996,
+        "warmP50Ms": 33.03308300000003
+      },
+      {
+        "modelId": "laya-en",
+        "type": "noul",
+        "group": "all",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.0038502499999999995,
+        "confusion": {
+          "false": {
+            "false": 1,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 1
+          }
+        },
+        "ece": 0.062000000000000055,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "attemptedAccuracy": 1,
+        "p50Ms": 31.405666999999994,
+        "p95Ms": 42.08416699999998,
+        "warmP50Ms": 31.405666999999994
+      },
+      {
+        "modelId": "laya-en",
+        "type": "noul",
+        "group": "language:en",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.00416025,
+        "confusion": {
+          "false": {
+            "false": 1,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 0
+          }
+        },
+        "ece": 0.0645,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "attemptedAccuracy": 1,
+        "p50Ms": 31.405666999999994,
+        "p95Ms": 31.405666999999994,
+        "warmP50Ms": 31.405666999999994
+      },
+      {
+        "modelId": "laya-en",
+        "type": "noul",
+        "group": "language:zh",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.0035402499999999996,
+        "confusion": {
+          "false": {
+            "false": 0,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 1
+          }
+        },
+        "ece": 0.0595,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "attemptedAccuracy": 1,
+        "p50Ms": 42.08416699999998,
+        "p95Ms": 42.08416699999998,
+        "warmP50Ms": 42.08416699999998
+      },
+      {
+        "modelId": "laya-en",
+        "type": "noul",
+        "group": "tag:context",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.0038502499999999995,
+        "confusion": {
+          "false": {
+            "false": 1,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 1
+          }
+        },
+        "ece": 0.062000000000000055,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "attemptedAccuracy": 1,
+        "p50Ms": 31.405666999999994,
+        "p95Ms": 42.08416699999998,
+        "warmP50Ms": 31.405666999999994
+      },
+      {
+        "modelId": "laya-en",
+        "type": "score",
+        "group": "all",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "mae": 0.47655,
+        "toleranceAccuracy": 0,
+        "p50Ms": 28.688499999999976,
+        "p95Ms": 34.62650000000002,
+        "warmP50Ms": 28.688499999999976
+      },
+      {
+        "modelId": "laya-en",
+        "type": "score",
+        "group": "language:en",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "mae": 0.20229999999999992,
+        "toleranceAccuracy": 0,
+        "p50Ms": 28.688499999999976,
+        "p95Ms": 28.688499999999976,
+        "warmP50Ms": 28.688499999999976
+      },
+      {
+        "modelId": "laya-en",
+        "type": "score",
+        "group": "language:zh",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "mae": 0.7508,
+        "toleranceAccuracy": 0,
+        "p50Ms": 34.62650000000002,
+        "p95Ms": 34.62650000000002,
+        "warmP50Ms": 34.62650000000002
+      },
+      {
+        "modelId": "laya-en",
+        "type": "score",
+        "group": "tag:relevance",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "mae": 0.47655,
+        "toleranceAccuracy": 0,
+        "p50Ms": 28.688499999999976,
+        "p95Ms": 34.62650000000002,
+        "warmP50Ms": 28.688499999999976
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "choice",
+        "group": "all",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 0.5,
+        "brier": 0.45581364,
+        "confusion": {
+          "review": {
+            "review": 1,
+            "build": 1
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.06390000000000007,
+        "macroF1": 0.3333333333333333,
+        "attemptedAccuracy": 0.5,
+        "p50Ms": 15.000916999999959,
+        "p95Ms": 94.33462499999996,
+        "firstCallMs": 94.33462499999996,
+        "warmP50Ms": 15.000916999999959
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "choice",
+        "group": "language:en",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.33488928,
+        "confusion": {
+          "review": {
+            "review": 1,
+            "build": 0
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.4092,
+        "macroF1": 0.5,
+        "attemptedAccuracy": 1,
+        "p50Ms": 94.33462499999996,
+        "p95Ms": 94.33462499999996,
+        "firstCallMs": 94.33462499999996
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "choice",
+        "group": "language:zh",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 0,
+        "brier": 0.576738,
+        "confusion": {
+          "review": {
+            "review": 0,
+            "build": 1
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.537,
+        "macroF1": 0,
+        "attemptedAccuracy": 0,
+        "p50Ms": 15.000916999999959,
+        "p95Ms": 15.000916999999959,
+        "warmP50Ms": 15.000916999999959
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "choice",
+        "group": "tag:intent",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 0.5,
+        "brier": 0.45581364,
+        "confusion": {
+          "review": {
+            "review": 1,
+            "build": 1
+          },
+          "build": {
+            "review": 0,
+            "build": 0
+          }
+        },
+        "ece": 0.06390000000000007,
+        "macroF1": 0.3333333333333333,
+        "attemptedAccuracy": 0.5,
+        "p50Ms": 15.000916999999959,
+        "p95Ms": 94.33462499999996,
+        "firstCallMs": 94.33462499999996,
+        "warmP50Ms": 15.000916999999959
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "noul",
+        "group": "all",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.025262180000000013,
+        "confusion": {
+          "false": {
+            "false": 1,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 1
+          }
+        },
+        "ece": 0.11870000000000003,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "attemptedAccuracy": 1,
+        "p50Ms": 13.614541000000031,
+        "p95Ms": 14.563332999999943,
+        "warmP50Ms": 13.614541000000031
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "noul",
+        "group": "language:en",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.000169,
+        "confusion": {
+          "false": {
+            "false": 1,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 0
+          }
+        },
+        "ece": 0.013000000000000012,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "attemptedAccuracy": 1,
+        "p50Ms": 13.614541000000031,
+        "p95Ms": 13.614541000000031,
+        "warmP50Ms": 13.614541000000031
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "noul",
+        "group": "language:zh",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.05035536000000002,
+        "confusion": {
+          "false": {
+            "false": 0,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 1
+          }
+        },
+        "ece": 0.22440000000000004,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "attemptedAccuracy": 1,
+        "p50Ms": 14.563332999999943,
+        "p95Ms": 14.563332999999943,
+        "warmP50Ms": 14.563332999999943
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "noul",
+        "group": "tag:context",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "accuracy": 1,
+        "brier": 0.025262180000000013,
+        "confusion": {
+          "false": {
+            "false": 1,
+            "true": 0
+          },
+          "true": {
+            "false": 0,
+            "true": 1
+          }
+        },
+        "ece": 0.11870000000000003,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "attemptedAccuracy": 1,
+        "p50Ms": 13.614541000000031,
+        "p95Ms": 14.563332999999943,
+        "warmP50Ms": 13.614541000000031
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "score",
+        "group": "all",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "mae": 0.54855,
+        "toleranceAccuracy": 0,
+        "p50Ms": 13.512625000000071,
+        "p95Ms": 14.246415999999954,
+        "warmP50Ms": 13.512625000000071
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "score",
+        "group": "language:en",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "mae": 0.2844,
+        "toleranceAccuracy": 0,
+        "p50Ms": 14.246415999999954,
+        "p95Ms": 14.246415999999954,
+        "warmP50Ms": 14.246415999999954
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "score",
+        "group": "language:zh",
+        "valid": 1,
+        "attempted": 1,
+        "unsupported": 0,
+        "mae": 0.8127,
+        "toleranceAccuracy": 0,
+        "p50Ms": 13.512625000000071,
+        "p95Ms": 13.512625000000071,
+        "warmP50Ms": 13.512625000000071
+      },
+      {
+        "modelId": "laya-multi",
+        "type": "score",
+        "group": "tag:relevance",
+        "valid": 2,
+        "attempted": 2,
+        "unsupported": 0,
+        "mae": 0.54855,
+        "toleranceAccuracy": 0,
+        "p50Ms": 13.512625000000071,
+        "p95Ms": 14.246415999999954,
+        "warmP50Ms": 13.512625000000071
+      }
+    ],
+    "errors": {},
+    "workflow": {
+      "status": "not_run"
+    },
+    "markdown": "# System One evaluation ddb2318a-c507-4b6f-88b9-b61112bef06c\n\nStatus: completed · suite: smoke-v1\n\nSmoke tests verify integration only; they do not establish model quality or token savings.\n\nCompleted: 12/12; errors: 0; unsupported: 0.\n\n| Model | Type | Group | Valid/attempted | Accuracy | Attempted accuracy | Brier | ECE | MAE | p50/p95 ms |\n|---|---|---|---|---|---|---|---|---|---|\n| laya-en | choice | all | 2/2 | 1.0000 | 1.0000 | 0.0439 | 0.1351 | N/A | 33.0331/267.4563 |\n| laya-en | choice | language:en | 1/1 | 1.0000 | 1.0000 | 0.0769 | 0.1961 | N/A | 267.4563/267.4563 |\n| laya-en | choice | language:zh | 1/1 | 1.0000 | 1.0000 | 0.0110 | 0.0741 | N/A | 33.0331/33.0331 |\n| laya-en | choice | tag:intent | 2/2 | 1.0000 | 1.0000 | 0.0439 | 0.1351 | N/A | 33.0331/267.4563 |\n| laya-en | noul | all | 2/2 | 1.0000 | 1.0000 | 0.0039 | 0.0620 | N/A | 31.4057/42.0842 |\n| laya-en | noul | language:en | 1/1 | 1.0000 | 1.0000 | 0.0042 | 0.0645 | N/A | 31.4057/31.4057 |\n| laya-en | noul | language:zh | 1/1 | 1.0000 | 1.0000 | 0.0035 | 0.0595 | N/A | 42.0842/42.0842 |\n| laya-en | noul | tag:context | 2/2 | 1.0000 | 1.0000 | 0.0039 | 0.0620 | N/A | 31.4057/42.0842 |\n| laya-en | score | all | 2/2 | N/A | N/A | N/A | N/A | 0.4765 | 28.6885/34.6265 |\n| laya-en | score | language:en | 1/1 | N/A | N/A | N/A | N/A | 0.2023 | 28.6885/28.6885 |\n| laya-en | score | language:zh | 1/1 | N/A | N/A | N/A | N/A | 0.7508 | 34.6265/34.6265 |\n| laya-en | score | tag:relevance | 2/2 | N/A | N/A | N/A | N/A | 0.4765 | 28.6885/34.6265 |\n| laya-multi | choice | all | 2/2 | 0.5000 | 0.5000 | 0.4558 | 0.0639 | N/A | 15.0009/94.3346 |\n| laya-multi | choice | language:en | 1/1 | 1.0000 | 1.0000 | 0.3349 | 0.4092 | N/A | 94.3346/94.3346 |\n| laya-multi | choice | language:zh | 1/1 | 0.0000 | 0.0000 | 0.5767 | 0.5370 | N/A | 15.0009/15.0009 |\n| laya-multi | choice | tag:intent | 2/2 | 0.5000 | 0.5000 | 0.4558 | 0.0639 | N/A | 15.0009/94.3346 |\n| laya-multi | noul | all | 2/2 | 1.0000 | 1.0000 | 0.0253 | 0.1187 | N/A | 13.6145/14.5633 |\n| laya-multi | noul | language:en | 1/1 | 1.0000 | 1.0000 | 0.0002 | 0.0130 | N/A | 13.6145/13.6145 |\n| laya-multi | noul | language:zh | 1/1 | 1.0000 | 1.0000 | 0.0504 | 0.2244 | N/A | 14.5633/14.5633 |\n| laya-multi | noul | tag:context | 2/2 | 1.0000 | 1.0000 | 0.0253 | 0.1187 | N/A | 13.6145/14.5633 |\n| laya-multi | score | all | 2/2 | N/A | N/A | N/A | N/A | 0.5485 | 13.5126/14.2464 |\n| laya-multi | score | language:en | 1/1 | N/A | N/A | N/A | N/A | 0.2844 | 14.2464/14.2464 |\n| laya-multi | score | language:zh | 1/1 | N/A | N/A | N/A | N/A | 0.8127 | 13.5126/13.5126 |\n| laya-multi | score | tag:relevance | 2/2 | N/A | N/A | N/A | N/A | 0.5485 | 13.5126/14.2464 |\n\nMetrics: s1-metrics-v1; suite SHA256: 49cf75d0c6a9156d9f5b034df7a4111058a77d924aadacba736e202beab4d5e7.\n\nWorkflow token savings: not_run. Confidence uses probabilities, not vendor confidence. No retries.\n"
+  },
+  "rows": [
+    {
+      "modelId": "laya-en",
+      "caseId": "choice-en",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": true,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-en",
+        "revision": 1,
+        "latencyMs": 267,
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "review",
+            "probabilities": {
+              "review": 0.8039,
+              "build": 0.1961
+            },
+            "confidence": 0.286,
+            "answer_confidence": 0.8039,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 33,
+          "output_tokens": 0,
+          "state_tokens": 7,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 267.45629199999996
+    },
+    {
+      "modelId": "laya-en",
+      "caseId": "choice-zh",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-en",
+        "revision": 1,
+        "latencyMs": 33,
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "review",
+            "probabilities": {
+              "review": 0.9259,
+              "build": 0.0741
+            },
+            "confidence": 0.6188,
+            "answer_confidence": 0.9259,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 55,
+          "output_tokens": 0,
+          "state_tokens": 14,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 33.03308300000003
+    },
+    {
+      "modelId": "laya-en",
+      "caseId": "noul-en",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-en",
+        "revision": 1,
+        "latencyMs": 32,
+        "answers": {
+          "decision": {
+            "type": "noul",
+            "noul": 0.0645,
+            "confidence": 0.9355,
+            "answer_confidence": 0.9355,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 47,
+          "output_tokens": 0,
+          "state_tokens": 7,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 31.405666999999994
+    },
+    {
+      "modelId": "laya-en",
+      "caseId": "noul-zh",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-en",
+        "revision": 1,
+        "latencyMs": 42,
+        "answers": {
+          "decision": {
+            "type": "noul",
+            "noul": 0.9405,
+            "confidence": 0.9405,
+            "answer_confidence": 0.9405,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 97,
+          "output_tokens": 0,
+          "state_tokens": 36,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 42.08416699999998
+    },
+    {
+      "modelId": "laya-en",
+      "caseId": "score-en",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-en",
+        "revision": 1,
+        "latencyMs": 29,
+        "answers": {
+          "decision": {
+            "type": "score",
+            "score": 1.7977,
+            "legend": {
+              "0": "Unrelated",
+              "1": "Indirectly related",
+              "2": "Directly requests code review"
+            },
+            "probabilities": {
+              "0": 0.0262,
+              "1": 0.1498,
+              "2": 0.8239
+            },
+            "confidence": 0.5089,
+            "answer_confidence": 0.8239,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 48,
+          "output_tokens": 0,
+          "state_tokens": 9,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 28.688499999999976
+    },
+    {
+      "modelId": "laya-en",
+      "caseId": "score-zh",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-en",
+        "revision": 1,
+        "latencyMs": 34,
+        "answers": {
+          "decision": {
+            "type": "score",
+            "score": 0.7508,
+            "legend": {
+              "0": "无关",
+              "1": "间接相关",
+              "2": "直接请求代码审查"
+            },
+            "probabilities": {
+              "0": 0.4639,
+              "1": 0.3215,
+              "2": 0.2146
+            },
+            "confidence": 0.0429,
+            "answer_confidence": 0.4639,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 70,
+          "output_tokens": 0,
+          "state_tokens": 17,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "english",
+          "repo": "convaiinnovations/laya",
+          "reason": "explicit model='english'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 34.62650000000002
+    },
+    {
+      "modelId": "laya-multi",
+      "caseId": "choice-en",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": true,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-multi",
+        "revision": 1,
+        "latencyMs": 94,
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "review",
+            "probabilities": {
+              "review": 0.5908,
+              "build": 0.4092
+            },
+            "confidence": 0.0239,
+            "answer_confidence": 0.5908,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 33,
+          "output_tokens": 0,
+          "state_tokens": 7,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 94.33462499999996
+    },
+    {
+      "modelId": "laya-multi",
+      "caseId": "choice-zh",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-multi",
+        "revision": 1,
+        "latencyMs": 15,
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "build",
+            "probabilities": {
+              "review": 0.463,
+              "build": 0.537
+            },
+            "confidence": 0.0039,
+            "answer_confidence": 0.537,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 36,
+          "output_tokens": 0,
+          "state_tokens": 9,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 15.000916999999959
+    },
+    {
+      "modelId": "laya-multi",
+      "caseId": "noul-en",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-multi",
+        "revision": 1,
+        "latencyMs": 14,
+        "answers": {
+          "decision": {
+            "type": "noul",
+            "noul": 0.013,
+            "confidence": 0.987,
+            "answer_confidence": 0.987,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 46,
+          "output_tokens": 0,
+          "state_tokens": 7,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 13.614541000000031
+    },
+    {
+      "modelId": "laya-multi",
+      "caseId": "noul-zh",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-multi",
+        "revision": 1,
+        "latencyMs": 15,
+        "answers": {
+          "decision": {
+            "type": "noul",
+            "noul": 0.7756,
+            "confidence": 0.7756,
+            "answer_confidence": 0.7756,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 63,
+          "output_tokens": 0,
+          "state_tokens": 23,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 14.563332999999943
+    },
+    {
+      "modelId": "laya-multi",
+      "caseId": "score-en",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-multi",
+        "revision": 1,
+        "latencyMs": 14,
+        "answers": {
+          "decision": {
+            "type": "score",
+            "score": 1.7156,
+            "legend": {
+              "0": "Unrelated",
+              "1": "Indirectly related",
+              "2": "Directly requests code review"
+            },
+            "probabilities": {
+              "0": 0.0183,
+              "1": 0.2479,
+              "2": 0.7338
+            },
+            "confidence": 0.412,
+            "answer_confidence": 0.7338,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 49,
+          "output_tokens": 0,
+          "state_tokens": 9,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 14.246415999999954
+    },
+    {
+      "modelId": "laya-multi",
+      "caseId": "score-zh",
+      "repeat": 0,
+      "status": "ok",
+      "firstCall": false,
+      "result": {
+        "actualModel": "laya-rl-agent",
+        "providerId": "laya",
+        "modelConfigId": "laya-multi",
+        "revision": 1,
+        "latencyMs": 14,
+        "answers": {
+          "decision": {
+            "type": "score",
+            "score": 0.8127,
+            "legend": {
+              "0": "无关",
+              "1": "间接相关",
+              "2": "直接请求代码审查"
+            },
+            "probabilities": {
+              "0": 0.1879,
+              "1": 0.8115,
+              "2": 0.0006
+            },
+            "confidence": 0.5557,
+            "answer_confidence": 0.8115,
+            "action": {
+              "act_probability": 1
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 45,
+          "output_tokens": 0,
+          "state_tokens": 6,
+          "state_tokens_dropped": 0,
+          "truncated": false,
+          "truncated_questions": []
+        },
+        "routing": {
+          "model": "multilingual",
+          "repo": "convaiinnovations/laya/multilingual",
+          "reason": "explicit model='multilingual'",
+          "detection": null,
+          "workflow": null
+        },
+        "confidenceSemantics": "normalized-entropy"
+      },
+      "latencyMs": 13.512625000000071
+    }
+  ]
+}

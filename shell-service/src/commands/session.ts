@@ -132,32 +132,42 @@ export async function createSession(ctx: Ctx, cmd: Extract<ShellCommand, { t: "c
   try { mkdirSync(join(getSessionsDir(), pid), { recursive: true }) } catch {}
   try {
     const adapter = liveSessions.getAdapter(cwd)
-    await adapter.newSession()
-    // Take the id straight from get_state: pi does not flush the .jsonl until the
-    // first assistant message, so polling the filesystem would never find it.
-    const st = await adapter.getState() as { sessionId?: unknown; sessionFile?: unknown; model?: unknown; thinkingLevel?: unknown }
-    const base = (p: string) => p.split("/").pop()?.replace(/\.jsonl$/, "") ?? p
-    const sid = (typeof st.sessionId === "string" && st.sessionId)
-      ? st.sessionId
-      : (typeof st.sessionFile === "string" && st.sessionFile ? base(st.sessionFile) : undefined)
-    const model = typeof st.model === "string" ? st.model : ""
-    const thinking = typeof st.thinkingLevel === "string" ? st.thinkingLevel : ""
-    registerPidCwd(pid, cwd)
-    if (sid) {
-      pendingLive.set(pid, { sid, model, thinking, mtime: Date.now() })
-      setActiveSession(cwd, sid)
-    }
-    ctx.broadcast({ t: "projects_snapshot", projects: projectsSnapshot() })
-    ctx.broadcast({ t: "session_list", projectId: pid, sessions: await sessionsWithPending(pid) })
-    if (!sid) {
-      ctx.fail("session_not_visible", "会话已创建但未能取到会话 id，稍后刷新重试")
-      return
-    }
-    ctx.send({ t: "session_created", projectId: pid, sessionId: sid, cwd })
-    setOpenSession(ctx.ws, pid, sid, cwd)
-    seedPushedEntries(sid, [])
-    ctx.send({ t: "session_snapshot", sessionId: sid, projectId: pid, cwd, leafId: "", entries: [], model, thinkingLevel: thinking })
+    const created = await adapter.newSession() as { cancelled?: boolean }
+    if (created?.cancelled) return
+    await adoptLiveSession(ctx, cwd)
   } catch (e) {
     ctx.fail("create_session_failed", ((e as Error)?.message ?? String(e)).slice(0, 200))
   }
+}
+
+/** Adopt the session Pi actually selected after a create, clone or fork. */
+export async function adoptLiveSession(ctx: Ctx, cwd: string) {
+  const pid = pidForCwd(cwd)
+  const adapter = liveSessions.getAdapter(cwd)
+  // Take the id straight from get_state: pi does not flush the .jsonl until the
+  // first assistant message, so polling the filesystem would never find it.
+  const st = await adapter.getState() as { sessionId?: unknown; sessionFile?: unknown; model?: unknown; thinkingLevel?: unknown }
+  const base = (p: string) => p.split("/").pop()?.replace(/\.jsonl$/, "") ?? p
+  const sid = (typeof st.sessionId === "string" && st.sessionId)
+    ? st.sessionId
+    : (typeof st.sessionFile === "string" && st.sessionFile ? base(st.sessionFile) : undefined)
+  const m = st.model as { provider?: string; id?: string } | string | undefined
+  const model = typeof m === "string" ? m : m?.provider && m?.id ? `${m.provider}/${m.id}` : ""
+  const thinking = typeof st.thinkingLevel === "string" ? st.thinkingLevel : ""
+  registerPidCwd(pid, cwd)
+  if (sid) {
+    pendingLive.set(pid, { sid, model, thinking, mtime: Date.now() })
+    setActiveSession(cwd, sid)
+  }
+  ctx.broadcast({ t: "projects_snapshot", projects: projectsSnapshot() })
+  ctx.broadcast({ t: "session_list", projectId: pid, sessions: await sessionsWithPending(pid) })
+  if (!sid) {
+    ctx.fail("session_not_visible", "会话已创建但未能取到会话 id，稍后刷新重试")
+    return
+  }
+  ctx.send({ t: "session_created", projectId: pid, sessionId: sid, cwd })
+  setOpenSession(ctx.ws, pid, sid, cwd)
+  const tree = await adapter.getEntries() as { entries: import("../session-entry-schema.js").SessionEntry[]; leafId: string }
+  seedPushedEntries(sid, tree.entries.map(e => e.id))
+  ctx.send({ t: "session_snapshot", sessionId: sid, projectId: pid, cwd, leafId: tree.leafId, entries: tree.entries, model, thinkingLevel: thinking })
 }
